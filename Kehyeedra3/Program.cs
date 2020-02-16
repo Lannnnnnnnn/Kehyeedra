@@ -1,0 +1,1 @@
+﻿using System.Threading.Tasks;namespace Kehyeedra3{class Program{static void Main(string[] args) => Start().GetAwaiter().GetResult();static async Task Start(){Bot bot = new Bot();await bot.CreateBot();await bot.StartBot();}}}
