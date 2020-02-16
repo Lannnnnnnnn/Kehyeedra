@@ -434,7 +434,7 @@ namespace Kehyeedra3
 
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                user = Database.Users.FirstOrDefault(x => x.Id == otherUser.Id);
+                user = Database.Users.FirstOrDefault(x => x.Id == (otherUser == null ? Context.User.Id : otherUser.Id));
                 buser = Database.Users.FirstOrDefault(x => x.Id == 0);
                 suser = Database.Users.FirstOrDefault(x => x.Id == 1);
             }
