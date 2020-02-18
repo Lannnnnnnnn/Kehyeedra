@@ -150,7 +150,6 @@ namespace Kehyeedra3
     //}
     public class Stuff : ModuleBase ///////////////////////////////////////////////
     {
-        //public DatabaseService dbService { get; set; }
 
         [Command("delet")]
         public async Task DeletThis()
@@ -265,7 +264,7 @@ namespace Kehyeedra3
         }
     }
     
-    public class Money : ModuleBase<ICommandContext>
+    public class Economy : ModuleBase<ICommandContext>
     {
         readonly string[] ores = new string[]
         {
@@ -304,6 +303,7 @@ namespace Kehyeedra3
                 "**Copper**,",
                 "**Volatile Motes**,",
                 "a **Diamond**,",
+                "a **Girlfriend**,",
                 "**Thorium**,",
                 "a **Fresh Apple**,",
                 "**Raid Shadow Legends** sponsorship money,",
@@ -329,6 +329,31 @@ namespace Kehyeedra3
                 "a **Can of Peaches**,",
                 "a **Used Deodorant Stick**,"
         };
+        readonly string[] discards = new string[]
+        {
+                "you presume it is worthless and toss it away",
+                "you drop it and lose it",
+                "a vicious furry takes it from you",
+                "it appears to have vanished",
+                "but it seems like you were hallucinating",
+                "but it is seized by the communists",
+                "you mistake it for a chance to succeed in life and throw it away"
+        };
+        readonly string[] rfish = new string[]
+        {
+                "Clownfish",
+                "Doomfish"
+        };
+        readonly string[] ufish = new string[]
+        {
+                "Mantis Shrimp",
+                "Gigacrab"
+        };
+        readonly string[] cfish = new string[]
+        {
+                "Cod",
+                "Salmon"
+        };
         readonly string o = "<:ye:677089325208305665>";
         readonly string n = "<:no:677091514249248778>";
         readonly string ye = "<:ya:677179974154715146>";
@@ -353,7 +378,9 @@ namespace Kehyeedra3
                 int end = 0;
                 string marks = $"{n}{n}{n}";
                 int num = SRandom.Next(ores.Length);
+                int numd = SRandom.Next(discards.Length);
                 string ore = ores[num];
+                string discard = discards[numd];
                 if (res1 > 20)
                 {
                     end = 1;
@@ -394,7 +421,7 @@ namespace Kehyeedra3
 
                 if (end == 0)
                 {
-                    await Context.Channel.SendMessageAsync($"{marks}\n{Context.User.Mention} You have found {ore} you presume it is worthless and toss it away.");
+                    await Context.Channel.SendMessageAsync($"{marks}\n{Context.User.Mention} You have found {ore} {discard}.");
                 }
                 else
                 {
@@ -424,6 +451,69 @@ namespace Kehyeedra3
             {
                 await Context.Channel.SendMessageAsync($"{Context.User.Mention} wait 1 minute ok next minute yeah? yeah buddy?");
             }
+        }
+        [Command("fish")]
+        public async Task Fishing()
+        {
+            int rarity = SRandom.Next(0, 201);
+            int rarmult = 0;
+            string rar = "";
+            string fish = "";
+            if (rarity > 180)
+            {
+                rar = "*Rare*";
+                rarmult = 3;
+                int num = SRandom.Next(rfish.Length);
+                fish = rfish[num];
+            }
+            else
+            {
+                if (rarity > 120)
+                {
+                    rar = "*Uncommon*";
+                    rarmult = 2;
+                    int num = SRandom.Next(ufish.Length);
+                    fish = ufish[num];
+                }
+                else
+                {
+                    if (rarity == 7)
+                    {
+                        rar = "***Glorious***";
+                        rarmult = 7;
+                        fish = "Lucky Catfish";
+                    }
+                    else
+                    {
+                        rar = "*Common*";
+                        rarmult = 1;
+                        int num = SRandom.Next(cfish.Length);
+                        fish = cfish[num];
+                    }
+                }
+            }
+
+            int weight = SRandom.Next(1, 201);
+            int size = 0;
+
+            if (weight > 150 || rarmult == 7)
+            {
+                size = 3;
+            }
+            else
+            {
+                if (weight > 100)
+                {
+                    size = 2;
+                }
+                else
+                {
+                    size = 1;
+                }
+            }
+            int value = size + rarmult;
+
+            await Context.Channel.SendMessageAsync($"You have caught a {weight/10d}kg **{fish}**, rarity: {rar}");
         }
         [Command("balance")]
         public async Task Shekels([Remainder] IUser otherUser = null)
