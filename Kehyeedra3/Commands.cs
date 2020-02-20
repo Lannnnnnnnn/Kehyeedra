@@ -683,6 +683,31 @@ namespace Kehyeedra3
                 }
             }
         }
+        [Command("leaderboard")]
+        public async Task Leaderboard()
+        {
+            User[] users;
+            User bank;
+            User skuld;
+
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                users = Database.Users.OrderByDescending(user => user.Money);
+                bank = Database.Users.FirstOrDefault(x => x.Id == 0);
+                skuld = Database.Users.FirstOrDefault(x => x.Id == 1);
+            }
+
+            String leaderboardMessage = "top 10 gays (#1 is extra cool):";
+            for (int i = 0; i < 10; i++)
+            {
+                String percent = $"{ users[i].Money / 10000d }";
+                String percentCirculating = $"{(users[i].Money * 100) / (1000000 - bank.Money - skuld.Money)}";
+                leaderboardMessage += "\n" + users[i].Mention + ": " + percent + " % - " + percentCirculating + "%C";
+            }
+
+            await Context.Channel.SendMessageAsync(leaderboardMessage);
+
+        }
         [Command("give")]
         public async Task GiveShekel(IGuildUser person, int amount)
         {
