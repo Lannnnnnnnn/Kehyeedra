@@ -249,7 +249,7 @@ namespace Kehyeedra3
             var reminder = new Reminder
             {
                 UserId = Context.User.Id,
-                Message = ($"Ok dude so at about UTC{dt} you wanted me to remind you and I quote '{r}'"),
+                Message = ($"At UTC {dt} you wanted me to remind you: **'{r}'**"),
                 Created = yeedraStamp,
                 Send = ((d * 86400) + (h * 3600) + (m * 60)) + yeedraStamp
             };
@@ -313,6 +313,7 @@ namespace Kehyeedra3
                 "a **Viet Cong Tunnel**,",
                 "a single unit of several **Trees**,",
                 "**1,000,000₩**,",
+                "**Jas's Love**,",
                 "a **Rock Golem**,",
                 "a piece of **Toast**,",
                 "**Luminite**,",
@@ -337,7 +338,8 @@ namespace Kehyeedra3
                 "it appears to have vanished",
                 "but it seems like you were hallucinating",
                 "but it is seized by the communists",
-                "you mistake it for a chance to succeed in life and throw it away"
+                "you mistake it for a chance to succeed in life and throw it away",
+                "you get scared and curb stomp it, shattering it"
         };
         readonly string[] rfish = new string[]
         {
@@ -479,7 +481,7 @@ namespace Kehyeedra3
                 {
                     if (rarity == 7)
                     {
-                        rar = "***Glorious***";
+                        rar = "***Legendary***";
                         rarmult = 7;
                         fish = "Lucky Catfish";
                     }
@@ -493,27 +495,29 @@ namespace Kehyeedra3
                 }
             }
 
-            int weight = SRandom.Next(1, 201);
+            int weight = SRandom.Next(1, 151);
             int size = 0;
 
-            if (weight > 150 || rarmult == 7)
+            if (weight >= 75)
             {
-                size = 3;
+                size = 2;
+                if (weight >= 100)
+                {
+                    weight = SRandom.Next(1, 201);
+                }
             }
             else
             {
-                if (weight > 100)
-                {
-                    size = 2;
-                }
-                else
-                {
-                    size = 1;
-                }
+                size = 1;
+            }
+
+            if (weight >= 150 || rarmult == 7)
+            {
+                size = 3;
             }
             int value = size + rarmult;
 
-            await Context.Channel.SendMessageAsync($"You have caught a {weight/10d}kg **{fish}**, rarity: {rar}");
+            await Context.Channel.SendMessageAsync($"{Context.User.Mention} You have caught a {weight/10d}kg **{fish}**, rarity: {rar}");
         }
         [Command("balance")]
         public async Task Shekels([Remainder] IUser otherUser = null)
@@ -545,7 +549,7 @@ namespace Kehyeedra3
                         await Database.SaveChangesAsync();
                     }
                 }
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention} You own {user.Money / 10000d}%\nWhich is {(user.Money * 100) / (1000000 - buser.Money - suser.Money)}% of the money in circulation");
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention} You own {user.Money / 10000d}%\nWhich is ~{Math.Round(((user.Money * 100d) / (1000000d - buser.Money - suser.Money)), 2, MidpointRounding.ToEven)}% of the money in circulation");
             }
             else
             {
@@ -566,7 +570,15 @@ namespace Kehyeedra3
                 await Context.Channel.SendMessageAsync($"{otherUser.Mention} owns {user.Money / 10000d}%\nWhich is {(user.Money * 100) / (1000000 - buser.Money - suser.Money)}% of the money in circulation");
             }
         }
-
+        [Command("top")]
+        public async Task Leaderboard()
+        {
+            User user;
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                
+            }
+        }
         [Command("bank")]
         public async Task BankBalance()
         {
@@ -582,9 +594,16 @@ namespace Kehyeedra3
         [Command("bet")]
         public async Task Gamble(int wager)
         {
-            int res0 = SRandom.Next(0, 10000000);
-            Random ran = new Random(res0);
-            int res1 = ran.Next(0, 101);
+            Random ran = new Random(SRandom.Next(0, 100000000) + int.Parse(Context.User.AvatarId + Context.User.Discriminator));
+            int res1 = ran.Next(0, 11);
+            if (res1 >= 5)
+            {
+                res1 = ran.Next(50, 101);
+            }
+            else
+            {
+                res1 = ran.Next(0, 50);
+            }
             if (wager<0)
             {
                 wager = 0;
@@ -608,7 +627,7 @@ namespace Kehyeedra3
                     }
                     else
                     {
-                        if (res1 < 60)
+                        if (res1 < 50)
                         {
                             wager = 0;
                         }
@@ -818,7 +837,14 @@ namespace Kehyeedra3
                 //reply
                 await ReplyAsync($"Set name to {_name}");
             }
-            [RequireRolePrecondition(AccessLevel.BotOwner)]
+        [RequireRolePrecondition(AccessLevel.BotOwner)]
+        [Command("getstamp")]
+        public async Task YeedraStamp()
+        {
+            ulong stamp = DateTime.UtcNow.ToYeedraStamp();
+            await ReplyAsync($"{Context.User.Mention} {stamp}");
+        }
+        [RequireRolePrecondition(AccessLevel.BotOwner)]
             [Command("savefile")]
 
             public async Task SaveFile(string fday, string fscore)
@@ -845,7 +871,6 @@ namespace Kehyeedra3
                 break;
             }
         }
-
     }
 
     //public class _ : ModuleBase
