@@ -11,11 +11,10 @@ using Kehyeedra3.Services;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using Kehyeedra3.Services.Models;
+using System.Collections.Generic;
 
 namespace Kehyeedra3
 {
-    //..[prefix]stats[group] ping[command]
-    //..stats ping
     [Group]
     public class Stats : ModuleBase ///////////////////////////////////////////////
     {
@@ -35,7 +34,7 @@ namespace Kehyeedra3
         {
             _service = service;
         }
-        [Command("commands")]
+        [Command("commands"), Alias("coomands")]
         public async Task HelpAsync()
         {
             string debug = null;
@@ -72,7 +71,7 @@ namespace Kehyeedra3
             await ReplyAsync(debug);
         }
 
-        [Command("command")]
+        [Command("command"),Alias("coomand")]
         public async Task HelpAsync(string command)
         {
             var result = _service.Search(Context, command);
@@ -519,7 +518,7 @@ namespace Kehyeedra3
 
             await Context.Channel.SendMessageAsync($"{Context.User.Mention} You have caught a {weight/10d}kg **{fish}**, rarity: {rar}");
         }
-        [Command("balance")]
+        [Command("balance"),Alias("bal","money")]
         public async Task Shekels([Remainder] IUser otherUser = null)
         {
             User user;
@@ -568,15 +567,6 @@ namespace Kehyeedra3
                     }
                 }
                 await Context.Channel.SendMessageAsync($"{otherUser.Mention} owns {user.Money / 10000d}%\nWhich is {(user.Money * 100) / (1000000 - buser.Money - suser.Money)}% of the money in circulation");
-            }
-        }
-        [Command("top")]
-        public async Task Leaderboard()
-        {
-            User user;
-            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
-            {
-                
             }
         }
         [Command("bank")]
@@ -683,26 +673,28 @@ namespace Kehyeedra3
                 }
             }
         }
-        [Command("leaderboard")]
+        [Command("leaderboard"),Alias("top","lb")]
         public async Task Leaderboard()
         {
-            User[] users;
+            List<User> users;
             User bank;
             User skuld;
 
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                users = Database.Users.OrderByDescending(user => user.Money);
+                users = Database.Users.OrderByDescending(user => user.Money).ToList();
                 bank = Database.Users.FirstOrDefault(x => x.Id == 0);
                 skuld = Database.Users.FirstOrDefault(x => x.Id == 1);
             }
+            users.Remove(bank);
+            users.Remove(skuld);
 
-            String leaderboardMessage = "top 10 gays (#1 is extra cool):";
+            string leaderboardMessage = "top 10 gays (regardless of position zeus is gay):";
             for (int i = 0; i < 10; i++)
             {
-                String percent = $"{ users[i].Money / 10000d }";
-                String percentCirculating = $"{(users[i].Money * 100) / (1000000 - bank.Money - skuld.Money)}";
-                leaderboardMessage += "\n" + users[i].Mention + ": " + percent + " % - " + percentCirculating + "%C";
+                string percent = $"{ users[i].Money / 10000d }";
+                string percentCirculating = $"{(users[i].Money * 100) / (1000000 - bank.Money - skuld.Money)}";
+                leaderboardMessage += "\n" + users[i].Username + ": " + percent + "% - " + percentCirculating + "%";
             }
 
             await Context.Channel.SendMessageAsync(leaderboardMessage);
