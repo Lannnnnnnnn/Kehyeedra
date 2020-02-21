@@ -242,13 +242,15 @@ namespace Kehyeedra3
         public async Task Reminder(ulong d, ulong h, ulong m, [Remainder] string r)
         {
             DateTime dt = DateTime.UtcNow;
+
+            string time = dt.ToString("dd/MM/yyyy HH:mm");
             
             ulong yeedraStamp = DateTime.UtcNow.ToYeedraStamp();
 
             var reminder = new Reminder
             {
                 UserId = Context.User.Id,
-                Message = ($"At UTC {dt} you wanted me to remind you: **'{r}'**"),
+                Message = ($"At **UTC {time}** you wanted me to remind you: **'{r}'**"),
                 Created = yeedraStamp,
                 Send = ((d * 86400) + (h * 3600) + (m * 60)) + yeedraStamp
             };
@@ -259,7 +261,7 @@ namespace Kehyeedra3
 
                 await Database.SaveChangesAsync().ConfigureAwait(false);
             }
-            await Context.Channel.SendMessageAsync($"Ok dude I'll remind you in {d}d {h}h {m}m");
+            await Context.Channel.SendMessageAsync($"{Context.User.Mention} Ok, I'll remind you in {d}d {h}h {m}m");
         }
     }
     
@@ -432,7 +434,6 @@ namespace Kehyeedra3
                     }
                 }
 
-
                 if (end != 0)
                 {
                     using (var Database = new ApplicationDbContextFactory().CreateDbContext())
@@ -453,70 +454,193 @@ namespace Kehyeedra3
                 await Context.Channel.SendMessageAsync($"{Context.User.Mention} wait 1 minute ok next minute yeah? yeah buddy?");
             }
         }
-        [Command("fish")]
+        [Command("fish"), Ratelimit(6, 2, Measure.Minutes)]
         public async Task Fishing()
         {
-            int rarity = SRandom.Next(0, 201);
-            int rarmult = 0;
-            string rar = "";
-            string fish = "";
-            if (rarity > 180)
+            ulong time = ulong.Parse(DateTime.Now.ToString("yyyyMMddHHmm"));
+            ulong lastfish;
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                rar = "*Rare*";
-                rarmult = 3;
-                int num = SRandom.Next(rfish.Length);
-                fish = rfish[num];
-            }
-            else
-            {
-                if (rarity > 120)
+                var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                if (user == null)
                 {
-                    rar = "*Uncommon*";
-                    rarmult = 2;
-                    int num = SRandom.Next(ufish.Length);
-                    fish = ufish[num];
+                    {
+                        user = new Fishing
+                        {
+                            Id = Context.User.Id,
+                        };
+                        Database.Fishing.Add(user);
+                        await Database.SaveChangesAsync();
+                    }
+                }
+                lastfish = user.LastFish;
+                await Database.SaveChangesAsync();
+            }
+            if (lastfish < time)
+            {
+                int rarity = SRandom.Next(0, 201);
+                int rarmult = 0;
+                string rar = "";
+                string fish = "";
+                if (rarity > 180)
+                {
+                    rar = "*Rare*";
+                    rarmult = 3;
+                    int num = SRandom.Next(rfish.Length);
+                    fish = rfish[num];
                 }
                 else
                 {
-                    if (rarity == 7)
+                    if (rarity > 120)
                     {
-                        rar = "***Legendary***";
-                        rarmult = 7;
-                        fish = "Lucky Catfish";
+                        rar = "*Uncommon*";
+                        rarmult = 2;
+                        int num = SRandom.Next(ufish.Length);
+                        fish = ufish[num];
                     }
                     else
                     {
-                        rar = "*Common*";
-                        rarmult = 1;
-                        int num = SRandom.Next(cfish.Length);
-                        fish = cfish[num];
+                        if (rarity == 7)
+                        {
+                            rar = "***Legendary***";
+                            rarmult = 7;
+                            fish = "Lucky Catfish";
+                        }
+                        else
+                        {
+                            rar = "*Common*";
+                            rarmult = 1;
+                            int num = SRandom.Next(cfish.Length);
+                            fish = cfish[num];
+                        }
                     }
                 }
-            }
 
-            int weight = SRandom.Next(1, 151);
-            int size = 0;
+                int weight = SRandom.Next(1, 151);
+                int size = 0;
 
-            if (weight >= 75)
-            {
-                size = 2;
-                if (weight >= 100)
+                if (weight >= 75)
                 {
-                    weight = SRandom.Next(1, 201);
+                    size = 2;
+                    if (weight >= 100)
+                    {
+                        weight = SRandom.Next(1, 201);
+                    }
+                }
+                else
+                {
+                    size = 1;
+                }
+
+                if (weight >= 150 || rarmult == 7)
+                {
+                    size = 3;
+                }
+                if (rarity > 40)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} You have caught a {weight / 10d}kg **{fish}**, rarity: {rar}");
+                    using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+                    {
+                        var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                        if (size == 1 && rarmult == 1)
+                        {
+                            Console.WriteLine("type: CFish1");
+                            user.TXp += 1;
+                            user.CFish1 += 1;
+                        }
+                        if (size == 1 && rarmult == 2)
+                        {
+                            Console.WriteLine("type: UFish1");
+                            user.TXp += 2;
+                            user.UFish1 += 1;
+                        }
+                        if (size == 1 && rarmult == 3)
+                        {
+                            Console.WriteLine("type: RFish1");
+                            user.TXp += 3;
+                            user.RFish1 += 1;
+                        }
+                        if (size == 2 && rarmult == 1)
+                        {
+                            Console.WriteLine("type: CFish2");
+                            user.TXp += 1;
+                            user.CFish2 += 1;
+                        }
+                        if (size == 2 && rarmult == 2)
+                        {
+                            Console.WriteLine("type: UFish2");
+                            user.TXp += 2;
+                            user.UFish2 += 1;
+                        }
+                        if (size == 2 && rarmult == 3)
+                        {
+                            Console.WriteLine("type: RFish2");
+                            user.TXp += 3;
+                            user.RFish2 += 1;
+                        }
+                        if (size == 3 && rarmult == 1)
+                        {
+                            Console.WriteLine("type: CFish3");
+                            user.TXp += 1;
+                            user.CFish3 += 1;
+                        }
+                        if (size == 3 && rarmult == 2)
+                        {
+                            Console.WriteLine("type: UFish3");
+                            user.TXp += 2;
+                            user.UFish3 += 1;
+                        }
+                        if (size == 3 && rarmult == 3)
+                        {
+                            Console.WriteLine("type: RFish3");
+                            user.TXp += 3;
+                            user.RFish3 += 1;
+                        }
+                        if (rarmult == 7)
+                        {
+                            Console.WriteLine("type: LFish");
+                            user.TXp += 10;
+                            user.LFish += 1;
+                        }
+                        user.LastFish = time;
+                        await Database.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"Your line snaps. Your disappointment is immeasurable, and your day is ruined.");
                 }
             }
             else
             {
-                size = 1;
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention} arrrrr-right you scurby bastard, I know you're eager to scour the seven seas but you need to wait till the next minute to access the treasure cove'o'tha depths");
             }
 
-            if (weight >= 150 || rarmult == 7)
+        }
+        [Command("inventory"),Alias("inv","fishinv")]
+        public async Task FishInventory()
+        {
+            Fishing user;
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                size = 3;
+                user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                await Database.SaveChangesAsync();
             }
-            int value = size + rarmult;
+            var CFish1 = user.CFish1;
+            var CFish2 = user.CFish2;
+            var CFish3 = user.CFish3;
 
-            await Context.Channel.SendMessageAsync($"{Context.User.Mention} You have caught a {weight/10d}kg **{fish}**, rarity: {rar}");
+            var UFish1 = user.UFish1;
+            var UFish2 = user.UFish2;
+            var UFish3 = user.UFish3;
+
+            var RFish1 = user.RFish1;
+            var RFish2 = user.RFish2;
+            var RFish3 = user.RFish3;
+
+            var LFish = user.LFish;
+
+            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**[Your Fish Inventory]**\n**Legendary**: {LFish}\n**A**: S{RFish1} M{RFish2} L{RFish3}\n**B**: S{UFish1} M{UFish2} L{UFish3}\n**C**: S{CFish1} M{CFish2} L{CFish3}");
         }
         [Command("balance"),Alias("bal","money")]
         public async Task Shekels([Remainder] IUser otherUser = null)
@@ -566,7 +690,7 @@ namespace Kehyeedra3
                         await Database.SaveChangesAsync();
                     }
                 }
-                await Context.Channel.SendMessageAsync($"{otherUser.Mention} owns {user.Money / 10000d}%\nWhich is {(user.Money * 100) / (1000000 - buser.Money - suser.Money)}% of the money in circulation");
+                await Context.Channel.SendMessageAsync($"{otherUser.Mention} owns {user.Money / 10000d}%\nWhich is ~{Math.Round(((user.Money * 100d) / (1000000d - buser.Money - suser.Money)), 2, MidpointRounding.ToEven)}% of the money in circulation");
             }
         }
         [Command("bank")]
@@ -689,12 +813,12 @@ namespace Kehyeedra3
             users.Remove(bank);
             users.Remove(skuld);
 
-            string leaderboardMessage = "top 10 gays (regardless of position zeus is gay):";
+            string leaderboardMessage = "**Top Ten Most Jewish Miners**:";
             for (int i = 0; i < 10; i++)
             {
                 string percent = $"{ users[i].Money / 10000d }";
-                string percentCirculating = $"{(users[i].Money * 100) / (1000000 - bank.Money - skuld.Money)}";
-                leaderboardMessage += "\n" + users[i].Username + ": " + percent + "% - " + percentCirculating + "%";
+                string percentCirculating = $"{Math.Round(((users[i].Money * 100d) / (1000000d - bank.Money - skuld.Money)),2,MidpointRounding.ToEven)}";
+                leaderboardMessage += $"\n**{users[i].Username}** : {percent}% ~ *{percentCirculating}% circulating*";
             }
 
             await Context.Channel.SendMessageAsync(leaderboardMessage);
