@@ -250,7 +250,7 @@ namespace Kehyeedra3
             var reminder = new Reminder
             {
                 UserId = Context.User.Id,
-                Message = ($"At **UTC {time}** you wanted me to remind you: **'{r}'**"),
+                Message = ($"At **UTC {time}** you wanted me to remind you:\n**'{r}'**"),
                 Created = yeedraStamp,
                 Send = ((d * 86400) + (h * 3600) + (m * 60)) + yeedraStamp
             };
@@ -347,33 +347,26 @@ namespace Kehyeedra3
         {
                 FishSpecies.Doomfish,
                 FishSpecies.Clownfish,
-                FishSpecies.GenericFish,
-                FishSpecies.Ultracrab,
-                FishSpecies.BlobFish,
-                FishSpecies.Psychedelica,
+                FishSpecies.Teracrab,
+                FishSpecies.Blobfish,
+                FishSpecies.Psychedelica
         };
         readonly FishSpecies[] ufish = new FishSpecies[]
         {
                 FishSpecies.Gigacrab,
-                FishSpecies.MantisShrimp,
-                FishSpecies.GoblinFish,
-                FishSpecies.BatFish,
-                FishSpecies.FrogFish,
-                FishSpecies.TigerFish,
+                FishSpecies.Frogfish,
                 FishSpecies.Stargazer,
                 FishSpecies.Isopod,
-                FishSpecies.SheepHead,
+                FishSpecies.Sheephead,
         };
         readonly FishSpecies[] cfish = new FishSpecies[]
         {
                 FishSpecies.Cod,
                 FishSpecies.Salmon,
-                FishSpecies.Pike,
                 FishSpecies.Bass,
                 FishSpecies.Crayfish,
                 FishSpecies.Betta,
-                FishSpecies.PufferFish,
-                FishSpecies.Tuna,
+                FishSpecies.Pufferfish,
                 FishSpecies.Carp,
                 FishSpecies.Megacrab
         };
@@ -479,6 +472,10 @@ namespace Kehyeedra3
         {
             ulong time = ulong.Parse(DateTime.Now.ToString("yyyyMMddHHmm"));
             ulong lastfish;
+            ulong totalXp;
+            ulong xp;
+            ulong level;
+            ulong lvlXp;
             List<FishingInventorySlot> inv = new List<FishingInventorySlot>();
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
@@ -497,12 +494,19 @@ namespace Kehyeedra3
                 {
                     inv = user.GetInventory();
                 }
+                level = user.Lvl;
                 lastfish = user.LastFish;
+                totalXp = user.TXp;
+                lvlXp = user.Xp;
                 await Database.SaveChangesAsync();
             }
+
+
+
             if (lastfish < time)
             {
-                int rarity = SRandom.Next(0, 201);
+                int rari = (SRandom.Next(0, 201));
+                ulong rarity = level + (ulong)rari;
                 FishRarity rarmult;
                 string rar = "";
                 FishSpecies fish ;
@@ -512,6 +516,7 @@ namespace Kehyeedra3
                     rarmult = FishRarity.Rare;
                     int num = SRandom.Next(rfish.Length);
                     fish = rfish[num];
+                    xp = 3;
                 }
                 else
                 {
@@ -521,14 +526,16 @@ namespace Kehyeedra3
                         rarmult = FishRarity.Uncommon;
                         int num = SRandom.Next(ufish.Length);
                         fish = ufish[num];
+                        xp = 2;
                     }
                     else
                     {
-                        if (rarity == 7)
+                        if (rarity == 77)
                         {
                             rar = "***Legendary***";
-                            rarmult = FishRarity.Special;
+                            rarmult = FishRarity.Legendary;
                             fish = FishSpecies.LuckyCatfish;
+                            xp = 7;
                         }
                         else
                         {
@@ -536,6 +543,7 @@ namespace Kehyeedra3
                             rarmult = FishRarity.Common;
                             int num = SRandom.Next(cfish.Length);
                             fish = cfish[num];
+                            xp = 1;
                         }
                     }
                 }
@@ -556,11 +564,11 @@ namespace Kehyeedra3
                     size = FishWeight.Small;
                 }
 
-                if (weight >= 150 || rarmult == FishRarity.Special)
+                if (weight >= 150 || rarmult == FishRarity.Legendary)
                 {
                     size = FishWeight.Large;
                 }
-                if (rarity > 40)
+                if (rarity > 20)
                 {
                     using (var Database = new ApplicationDbContextFactory().CreateDbContext())
                     {
@@ -585,8 +593,10 @@ namespace Kehyeedra3
                         }
 
                         user.SetInventory(inv);
-
+                        
                         user.LastFish = time;
+
+                        user.TXp += xp;
 
                         await Database.SaveChangesAsync().ConfigureAwait(false); // :]
                     }

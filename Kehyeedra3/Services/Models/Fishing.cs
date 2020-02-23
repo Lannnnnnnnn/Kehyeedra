@@ -44,31 +44,24 @@ namespace Kehyeedra3.Services.Models
         //rare
         Doomfish = 2,
         Clownfish = 3,
-        GenericFish = 4,
-        Ultracrab = 5,
-        BlobFish = 6,
-        Psychedelica = 7,
+        Teracrab = 4,
+        Blobfish = 5,
+        Psychedelica = 6,
         //uncommon
-        Gigacrab = 8,
-        MantisShrimp = 9,
-        GoblinFish = 10,
-        BatFish = 11,
-        FrogFish = 12,
-        TigerFish = 13,
-        Stargazer = 14,
-        Isopod = 15,
-        SheepHead = 16,
+        Gigacrab = 7,
+        Frogfish = 8,
+        Stargazer = 9,
+        Isopod = 10,
+        Sheephead = 11,
         //common
-        Cod = 17,
-        Salmon = 18,
-        Pike = 19,
-        Bass = 20,
-        Crayfish = 21,
-        Betta = 22,
-        PufferFish = 23,
-        Tuna = 24,
-        Carp = 25,
-        Megacrab = 26
+        Cod = 12,
+        Salmon = 13,
+        Pufferfish = 14,
+        Bass = 15,
+        Crayfish = 16,
+        Betta = 17,
+        Carp = 18,
+        Megacrab = 19
     }
     public enum FishWeight
     {
@@ -81,7 +74,7 @@ namespace Kehyeedra3.Services.Models
         Common = 1,
         Uncommon = 2,
         Rare = 3,
-        Special = 4
+        Legendary = 4
     }
     public class FishingInventorySlot
     {
