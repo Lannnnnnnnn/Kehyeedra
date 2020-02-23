@@ -340,22 +340,42 @@ namespace Kehyeedra3
                 "but it seems like you were hallucinating",
                 "but it is seized by the communists",
                 "you mistake it for a chance to succeed in life and throw it away",
-                "you get scared and curb stomp it, shattering it"
+                "you get scared and curb stomp it, shattering it",
+                "the **Goblins** claim rightful possession of it"
         };
-        readonly string[] rfish = new string[]
+        readonly FishSpecies[] rfish = new FishSpecies[]
         {
-                "Clownfish",
-                "Doomfish"
+                FishSpecies.Doomfish,
+                FishSpecies.Clownfish,
+                FishSpecies.GenericFish,
+                FishSpecies.Ultracrab,
+                FishSpecies.BlobFish,
+                FishSpecies.Psychedelica,
         };
-        readonly string[] ufish = new string[]
+        readonly FishSpecies[] ufish = new FishSpecies[]
         {
-                "Mantis Shrimp",
-                "Gigacrab"
+                FishSpecies.Gigacrab,
+                FishSpecies.MantisShrimp,
+                FishSpecies.GoblinFish,
+                FishSpecies.BatFish,
+                FishSpecies.FrogFish,
+                FishSpecies.TigerFish,
+                FishSpecies.Stargazer,
+                FishSpecies.Isopod,
+                FishSpecies.SheepHead,
         };
-        readonly string[] cfish = new string[]
+        readonly FishSpecies[] cfish = new FishSpecies[]
         {
-                "Cod",
-                "Salmon"
+                FishSpecies.Cod,
+                FishSpecies.Salmon,
+                FishSpecies.Pike,
+                FishSpecies.Bass,
+                FishSpecies.Crayfish,
+                FishSpecies.Betta,
+                FishSpecies.PufferFish,
+                FishSpecies.Tuna,
+                FishSpecies.Carp,
+                FishSpecies.Megacrab
         };
         readonly string o = "<:ye:677089325208305665>";
         readonly string n = "<:no:677091514249248778>";
@@ -459,6 +479,7 @@ namespace Kehyeedra3
         {
             ulong time = ulong.Parse(DateTime.Now.ToString("yyyyMMddHHmm"));
             ulong lastfish;
+            List<FishingInventorySlot> inv = new List<FishingInventorySlot>();
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
@@ -470,8 +491,11 @@ namespace Kehyeedra3
                             Id = Context.User.Id,
                         };
                         Database.Fishing.Add(user);
-                        await Database.SaveChangesAsync();
                     }
+                }
+                else
+                {
+                    inv = user.GetInventory();
                 }
                 lastfish = user.LastFish;
                 await Database.SaveChangesAsync();
@@ -479,13 +503,13 @@ namespace Kehyeedra3
             if (lastfish < time)
             {
                 int rarity = SRandom.Next(0, 201);
-                int rarmult = 0;
+                FishRarity rarmult;
                 string rar = "";
-                string fish = "";
+                FishSpecies fish ;
                 if (rarity > 180)
                 {
                     rar = "*Rare*";
-                    rarmult = 3;
+                    rarmult = FishRarity.Rare;
                     int num = SRandom.Next(rfish.Length);
                     fish = rfish[num];
                 }
@@ -494,7 +518,7 @@ namespace Kehyeedra3
                     if (rarity > 120)
                     {
                         rar = "*Uncommon*";
-                        rarmult = 2;
+                        rarmult = FishRarity.Uncommon;
                         int num = SRandom.Next(ufish.Length);
                         fish = ufish[num];
                     }
@@ -503,13 +527,13 @@ namespace Kehyeedra3
                         if (rarity == 7)
                         {
                             rar = "***Legendary***";
-                            rarmult = 7;
-                            fish = "Lucky Catfish";
+                            rarmult = FishRarity.Special;
+                            fish = FishSpecies.LuckyCatfish;
                         }
                         else
                         {
                             rar = "*Common*";
-                            rarmult = 1;
+                            rarmult = FishRarity.Common;
                             int num = SRandom.Next(cfish.Length);
                             fish = cfish[num];
                         }
@@ -517,11 +541,11 @@ namespace Kehyeedra3
                 }
 
                 int weight = SRandom.Next(1, 151);
-                int size = 0;
+                FishWeight size;
 
                 if (weight >= 75)
                 {
-                    size = 2;
+                    size = FishWeight.Medium;
                     if (weight >= 100)
                     {
                         weight = SRandom.Next(1, 201);
@@ -529,82 +553,45 @@ namespace Kehyeedra3
                 }
                 else
                 {
-                    size = 1;
+                    size = FishWeight.Small;
                 }
 
-                if (weight >= 150 || rarmult == 7)
+                if (weight >= 150 || rarmult == FishRarity.Special)
                 {
-                    size = 3;
+                    size = FishWeight.Large;
                 }
                 if (rarity > 40)
                 {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} You have caught a {weight / 10d}kg **{fish}**, rarity: {rar}");
                     using (var Database = new ApplicationDbContextFactory().CreateDbContext())
                     {
                         var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
-                        if (size == 1 && rarmult == 1)
+
+                        if (inv.Any(x => x.Fish.Species == fish && x.Fish.Weight == size && x.Fish.Rarity == rarmult))
                         {
-                            Console.WriteLine("type: CFish1");
-                            user.TXp += 1;
-                            user.CFish1 += 1;
+                            inv.FirstOrDefault(x => x.Fish.Species == fish && x.Fish.Weight == size && x.Fish.Rarity == rarmult).Amount += 1;
                         }
-                        if (size == 1 && rarmult == 2)
+                        else
                         {
-                            Console.WriteLine("type: UFish1");
-                            user.TXp += 2;
-                            user.UFish1 += 1;
+                            inv.Add(new FishingInventorySlot
+                            {
+                                Fish = new FishObject
+                                {
+                                    Species = fish,
+                                    Weight = size,
+                                    Rarity = rarmult
+                                },
+                                Amount = 1
+                            });
                         }
-                        if (size == 1 && rarmult == 3)
-                        {
-                            Console.WriteLine("type: RFish1");
-                            user.TXp += 3;
-                            user.RFish1 += 1;
-                        }
-                        if (size == 2 && rarmult == 1)
-                        {
-                            Console.WriteLine("type: CFish2");
-                            user.TXp += 1;
-                            user.CFish2 += 1;
-                        }
-                        if (size == 2 && rarmult == 2)
-                        {
-                            Console.WriteLine("type: UFish2");
-                            user.TXp += 2;
-                            user.UFish2 += 1;
-                        }
-                        if (size == 2 && rarmult == 3)
-                        {
-                            Console.WriteLine("type: RFish2");
-                            user.TXp += 3;
-                            user.RFish2 += 1;
-                        }
-                        if (size == 3 && rarmult == 1)
-                        {
-                            Console.WriteLine("type: CFish3");
-                            user.TXp += 1;
-                            user.CFish3 += 1;
-                        }
-                        if (size == 3 && rarmult == 2)
-                        {
-                            Console.WriteLine("type: UFish3");
-                            user.TXp += 2;
-                            user.UFish3 += 1;
-                        }
-                        if (size == 3 && rarmult == 3)
-                        {
-                            Console.WriteLine("type: RFish3");
-                            user.TXp += 3;
-                            user.RFish3 += 1;
-                        }
-                        if (rarmult == 7)
-                        {
-                            Console.WriteLine("type: LFish");
-                            user.TXp += 10;
-                            user.LFish += 1;
-                        }
+
+                        user.SetInventory(inv);
+
                         user.LastFish = time;
-                        await Database.SaveChangesAsync();
+
+                        await Database.SaveChangesAsync().ConfigureAwait(false); // :]
                     }
+
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} You have caught a {weight / 10d}kg **{fish}**, rarity: {rar}");
                 }
                 else
                 {
@@ -621,26 +608,46 @@ namespace Kehyeedra3
         public async Task FishInventory()
         {
             Fishing user;
+            List<FishingInventorySlot> inv = new List<FishingInventorySlot>();
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
-                await Database.SaveChangesAsync();
+
+                if (user == null)
+                {
+                    user = new Fishing
+                    {
+                        Id = Context.User.Id
+                    };
+                    
+                    Database.Fishing.Add(user);
+                }
+                else
+                {
+                    inv = user.GetInventory();
+                }
+
+                await Database.SaveChangesAsync().ConfigureAwait(false);
             }
-            var CFish1 = user.CFish1;
-            var CFish2 = user.CFish2;
-            var CFish3 = user.CFish3;
 
-            var UFish1 = user.UFish1;
-            var UFish2 = user.UFish2;
-            var UFish3 = user.UFish3;
+            if(inv.Any())
+            {
+                EmbedBuilder embed = new EmbedBuilder();
 
-            var RFish1 = user.RFish1;
-            var RFish2 = user.RFish2;
-            var RFish3 = user.RFish3;
+                embed.Description = $"{Context.User.Mention}'s Inventory";
 
-            var LFish = user.LFish;
+                inv.ForEach(x =>
+                {
+                    embed.AddField(x.Fish.ToString(), x.Amount.ToString(), true);
+                });
 
-            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**[Your Fish Inventory]**\n**Legendary**: {LFish}\n**A**: S{RFish1} M{RFish2} L{RFish3}\n**B**: S{UFish1} M{UFish2} L{UFish3}\n**C**: S{CFish1} M{CFish2} L{CFish3}");
+                //fishgohere
+                await Context.Channel.SendMessageAsync(embed: embed.Build()).ConfigureAwait(false);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Go fish nigger").ConfigureAwait(false);
+            }
         }
         [Command("balance"),Alias("bal","money")]
         public async Task Shekels([Remainder] IUser otherUser = null)
