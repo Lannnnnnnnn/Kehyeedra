@@ -12,6 +12,7 @@ using MySql.Data;
 using MySql.Data.MySqlClient;
 using Kehyeedra3.Services.Models;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Kehyeedra3
 {
@@ -292,7 +293,7 @@ namespace Kehyeedra3
             }
         }
     }
-    
+
     public class Economy : ModuleBase<ICommandContext>
     {
         readonly string[] ores = new string[]
@@ -359,6 +360,7 @@ namespace Kehyeedra3
                 "a **Can of Peaches**,",
                 "a **Used Deodorant Stick**,"
         };
+
         readonly string[] discards = new string[]
         {
                 "you presume it is worthless and toss it away",
@@ -371,60 +373,62 @@ namespace Kehyeedra3
                 "you get scared and curb stomp it, shattering it",
                 "the **Goblins** claim rightful possession of it"
         };
-        readonly FishSpecies[] rfish = new FishSpecies[]
-        {
-                FishSpecies.Doomfish,
-                FishSpecies.Clownfish,
-                FishSpecies.Teracrab,
-                FishSpecies.Blobfish,
-                FishSpecies.Psychedelica
-        };
-        readonly string[] rfishmotes = new string[]
-        {
-                "<:doomfish:651879988232060949>",
-                "<:missingRar:682586847100403715>[Clownfish]",
-                "<a:teracrableft:681872487901954123><a:teracrabright:681872487264681984>",
-                "<:missingRar:682586847100403715>[Blobfish]",
-                "<a:psychedelicaleft:682606276592664666><a:psychedelicaright:682606278354141249>"
-        };
-        readonly FishSpecies[] ufish = new FishSpecies[]
-        {
-                FishSpecies.Gigacrab,
-                FishSpecies.Dopefish,
-                FishSpecies.Stargazer,
-                FishSpecies.Isopod,
-                FishSpecies.Sheephead,
-        };
-        readonly string[] ufishmotes = new string[]
-{
-                "<:gigacrab:681871426382594208>",
-                "<:missingUnc:682586846857003064>[Dopefish]",
-                "<:missingUnc:682586846857003064>[Stargazer]",
-                "<:missingUnc:682586846857003064>[Isopod]",
-                "<:sheepheadleft:681200891810021376><:sheepheadright:681200891608563767>"
-};
-        readonly FishSpecies[] cfish = new FishSpecies[]
-        {
-                FishSpecies.Cod,
-                FishSpecies.Salmon,
-                FishSpecies.Shrimp,
-                FishSpecies.Crayfish,
-                FishSpecies.Betta,
-                FishSpecies.Pufferfish,
-                FishSpecies.Carp,
-                FishSpecies.Megacrab
-        };
-        readonly string[] cfishmotes = new string[]
-{
-                "<:codleft:681182238448418891><:codright:681182238628511747>",
-                "<:missingCom:682586847079432217> [Salmon]",
-                "<:missingCom:682586847079432217> [Shrimp]",
-                "<:missingCom:682586847079432217> [Crayfish]",
-                "<:missingCom:682586847079432217> [Betta]",
-                "<:missingCom:682586847079432217> [Pufferfish]",
-                "<:missingCom:682586847079432217> [Carp]",
-                "<:megacrab:681871426319286302>"
-};
+        /*
+               readonly FishSpecies[] rfish = new FishSpecies[]
+               {
+                       FishSpecies.,
+                       FishSpecies.,
+                       FishSpecies.,
+                       FishSpecies.,
+                       FishSpecies.
+               };
+               readonly string[] rfishmotes = new string[]
+               {
+                       "",
+
+                       ,
+                       "",
+                       "<a:psychedelicaleft:682606276592664666><a:psychedelicaright:682606278354141249>"
+               };
+               readonly FishSpecies[] ufish = new FishSpecies[]
+               {
+                       FishSpecies.Gigacrab,
+                       FishSpecies.Dopefish,
+                       FishSpecies.Stargazer,
+                       FishSpecies.Isopod,
+                       FishSpecies.Sheephead,
+               };
+               readonly string[] ufishmotes = new string[]
+       {
+                       "<:gigacrab:681871426382594208>",
+                       "<:missingUnc:682586846857003064>[Dopefish]",
+                       "<:missingUnc:682586846857003064>[Stargazer]",
+                       "<:missingUnc:682586846857003064>[Isopod]",
+                       "<:sheepheadleft:681200891810021376><:sheepheadright:681200891608563767>"
+       };
+               readonly FishSpecies[] cfish = new FishSpecies[]
+               {
+                       FishSpecies.Cod,
+                       FishSpecies.Salmon,
+                       FishSpecies.Shrimp,
+                       FishSpecies.Crayfish,
+                       FishSpecies.Betta,
+                       FishSpecies.Pufferfish,
+                       FishSpecies.Carp,
+                       FishSpecies.Megacrab
+               };
+               readonly string[] cfishmotes = new string[]
+       {
+                       "<:codleft:681182238448418891><:codright:681182238628511747>",
+                       "<:missingCom:682586847079432217> [Salmon]",
+                       "<:missingCom:682586847079432217> [Shrimp]",
+                       "<:missingCom:682586847079432217> [Crayfish]",
+                       "<:missingCom:682586847079432217> [Betta]",
+                       "<:missingCom:682586847079432217> [Pufferfish]",
+                       "<:missingCom:682586847079432217> [Carp]",
+                       "<:megacrab:681871426319286302>"
+       };
+       */
         readonly string o = "<:ye:677089325208305665>";
         readonly string n = "<:no:677091514249248778>";
         readonly string ye = "<:ya:677179974154715146>";
@@ -523,7 +527,7 @@ namespace Kehyeedra3
             }
         }
         [Command("fish"), Ratelimit(6, 2, Measure.Minutes)]
-        public async Task Fishing()
+        public async Task FishCommand()
         {
             ulong time = ulong.Parse(DateTime.Now.ToString("yyyyMMddHHmm"));
             ulong lastfish;
@@ -531,7 +535,9 @@ namespace Kehyeedra3
             ulong xp;
             ulong level;
             ulong lvlXp;
-            List<FishingInventorySlot> inv = new List<FishingInventorySlot>();
+            Dictionary<FishSpecies, int[]> inv = new Dictionary<FishSpecies, int[]>();
+            List<Fish> fishes = Fishing.GetFishList();
+
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
@@ -553,7 +559,7 @@ namespace Kehyeedra3
                 lastfish = user.LastFish;
                 totalXp = user.TXp;
                 lvlXp = user.Xp;
-               
+
                 await Database.SaveChangesAsync();
             }
 
@@ -573,72 +579,99 @@ namespace Kehyeedra3
                 {
                     rarity = 100 + (ulong)rari;
                 }
-                
-                FishRarity rarmult;
-                string rar = "";
-                FishSpecies fish;
-                string emote = "";
-                if (rarity > 200)
+
+                Fish fish;
+
+                if (rarity == 207)
                 {
-                    rar = "*Rare*";
-                    rarmult = FishRarity.Rare;
-                    int num = SRandom.Next(rfish.Length);
-                    fish = rfish[num];
-                    emote = rfishmotes[num];
+                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
+                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                    weight = SRandom.Next(200, 4001);
+                    xp = 100;
+                }
+                else if (rarity > 200)
+                {
+                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
+                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                     xp = 20;
+                }
+                else if (rarity > 180)
+                {
+                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
+                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                    xp = 10;
                 }
                 else
                 {
-                    if (rarity > 180)
-                    {
-                        rar = "*Uncommon*";
-                        rarmult = FishRarity.Uncommon;
-                        int num = SRandom.Next(ufish.Length);
-                        fish = ufish[num];
-                        emote = ufishmotes[num];
-                        xp = 10;
-                    }
-                    else
-                    {
-                        if (rarity == 207)
-                        {
-                            rar = "***Legendary***";
-                            rarmult = FishRarity.Legendary;
-                            fish = FishSpecies.LuckyCatfish;
-                            weight = SRandom.Next(200, 4001);
-                            emote = "<a:catfishleft:682655661422542888><a:catfishright:682655661481525284>";
-                            xp = 100;
-                        }
-                        else
-                        {
-                            rar = "*Common*";
-                            rarmult = FishRarity.Common;
-                            int num = SRandom.Next(cfish.Length);
-                            fish = cfish[num];
-                            emote = cfishmotes[num];
-                            xp = 5;
-                        }
-                    }
+                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Common).ToList();
+                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                    xp = 5;
                 }
 
-                FishWeight size;
+
+
+
+                //if (rarity > 200)
+                //{
+                //    rar = "*Rare*";
+                //    rarmult = FishRarity.Rare;
+                //    int num = SRandom.Next(rfish.Length);
+                //    fish = Fish.Name;
+                //    emote = Fish.Emote[num];
+                //    xp = 20;
+                //}
+                //else
+                //{
+                //    if (rarity > 180)
+                //    {
+                //        rar = "*Uncommon*";
+                //        rarmult = FishRarity.Uncommon;
+                //        int num = SRandom.Next(ufish.Length);
+                //        fish = ufish[num];
+                //        emote = ufishmotes[num];
+                //        xp = 10;
+                //    }
+                //    else
+                //    {
+                //        if (rarity == 207)
+                //        {
+                //            rar = "***Legendary***";
+                //            rarmult = FishRarity.Legendary;
+                //            fish = FishSpecies.LuckyCatfish;
+                //            
+                //            emote = "<a:catfishleft:682655661422542888><a:catfishright:682655661481525284>";
+                //            xp = 100;
+                //        }
+                //        else
+                //        {
+                //            rar = "*Common*";
+                //            rarmult = FishRarity.Common;
+                //            int num = SRandom.Next(cfish.Length);
+                //            fish = cfish[num];
+                //            emote = cfishmotes[num];
+                //            xp = 5;
+                //        }
+                //    }
+                //}
+
+                FishSize size;
 
                 if (weight >= 75)
                 {
-                    size = FishWeight.Medium;
-                    if (weight >= (100-Convert.ToInt32(level)))
+                    size = FishSize.Medium;
+                    if (weight >= (100 - Convert.ToInt32(level)))
                     {
-                        weight = SRandom.Next(100, 201);
+                        weight = SRandom.Next(1, 201);
                     }
                 }
                 else
                 {
-                    size = FishWeight.Small;
+                    size = FishSize.Small;
                 }
 
                 if (weight >= 150)
                 {
-                    size = FishWeight.Large;
+                    size = FishSize.Large;
                 }
 
                 string lvlUp = "";
@@ -656,28 +689,20 @@ namespace Kehyeedra3
                     using (var Database = new ApplicationDbContextFactory().CreateDbContext())
                     {
                         var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
-                        
-                        if (inv.Any(x => x.Fish.Species == fish && x.Fish.Weight == size && x.Fish.Rarity == rarmult))
+
+                        inv = user.GetInventory();
+
+                        int[] amounts;
+                        if (!inv.TryGetValue(fish.Id, out amounts))
                         {
-                            inv.FirstOrDefault(x => x.Fish.Species == fish && x.Fish.Weight == size && x.Fish.Rarity == rarmult).Amount += 1;
-                        }
-                        else
-                        {
-                            inv.Add(new FishingInventorySlot
-                            {
-                                Fish = new FishObject
-                                {
-                                    Species = fish,
-                                    Weight = size,
-                                    Rarity = rarmult
-                                },
-                                Amount = 1
-                            });
+                            amounts = new int[] { 0, 0, 0 };
+                            inv.Add(fish.Id, amounts);
                         }
 
+                        int sizeIndex = (int)size;
+                        amounts[sizeIndex]++;
+                       
                         user.SetInventory(inv);
-                        
-                        
 
                         user.TXp += xp;
 
@@ -706,11 +731,11 @@ namespace Kehyeedra3
                         await Database.SaveChangesAsync().ConfigureAwait(false); // :]
                     }
 
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n {emote} You have caught a {weight / 10d}kg **{fish}**, rarity: {rar}\nYou gain **{xp}**xp.\n{lvlUp}");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n {fish.Emote} You have caught a {weight / 10d}kg **{fish.Name}**, rarity: {fish.Rarity}\nYou gain **{xp}**xp.\n{lvlUp}");
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"Your line snaps. Your disappointment is immeasurable, and your day is ruined.");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your line snaps. Your disappointment is immeasurable, and your day is ruined.");
                 }
             }
             else
@@ -723,7 +748,7 @@ namespace Kehyeedra3
         public async Task FishInventory()
         {
             Fishing user;
-            List<FishingInventorySlot> inv = new List<FishingInventorySlot>();
+            Dictionary<FishSpecies, int[]> inv = new Dictionary<FishSpecies, int[]>();
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
@@ -740,30 +765,34 @@ namespace Kehyeedra3
                 else
                 {
                     inv = user.GetInventory();
+                    
                 }
 
                 await Database.SaveChangesAsync().ConfigureAwait(false);
             }
-
+            
             if(inv.Any())
             {
-                EmbedBuilder embed = new EmbedBuilder
-                {
-                    Description = $"{Context.User.Mention}'s Inventory"
-                };
-
+                //TODO
+                /*
+                string inventory;
                 inv.ForEach(x =>
                 {
-                    string content = $"{x.Fish.Weight.ToString()} {x.Fish.Species.ToString()} ";
-                    embed.AddField(content, x.Amount.ToString(), true);
+                    string content = $"{x.Fish.Weight.ToString()} {x.Fish.Species.ToString()}\n";
                 });
 
-                await Context.Channel.SendMessageAsync(embed: embed.Build()).ConfigureAwait(false);
+                await Context.Channel.SendMessageAsync($"");
+                */
             }
             else
             {
                 await Context.Channel.SendMessageAsync("Go fish nigger").ConfigureAwait(false);
             }
+        }
+        [Command("trade")]
+        public async Task Trading()
+        {
+
         }
         [Command("balance"),Alias("bal","money")]
         public async Task Shekels([Remainder] IUser otherUser = null)
