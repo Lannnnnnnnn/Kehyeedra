@@ -107,18 +107,19 @@ namespace Kehyeedra3
                 {
                     await context.Channel.SendMessageAsync($"B emoji detected. Proceed to kill yourself, {context.User.Mention}");
                 }
-                var erole = context.Guild.GetRole(674970145268957194);
+                var jrole = context.Guild.GetRole(375289794999091201);
                 var euser = await context.Guild.GetUserAsync(context.User.Id).ConfigureAwait(false);
-                if (!euser.RoleIds.Any(id => id == 674970145268957194))
+                var jas = await context.Guild.GetUserAsync(236952555265982464).ConfigureAwait(false);
+                if (euser.RoleIds.Any(id => id == 682109241363922965))
                 {
-                    if (message.Content.Contains("<@&674970145268957194>")) //everyone role
+                    if (message.Content.Contains("thot begone")) //add
                     {
-                        await euser.AddRoleAsync(erole);
+                        await jas.AddRoleAsync(jrole);
                     }
                 }
-                if (message.Content.Contains("cock and ball torture is a sexual activity involving the torture of the male genitals")) //remove role
+                if (message.Content.Contains("thot return")) //remove
                 {
-                    await euser.RemoveRoleAsync(erole);
+                    await jas.RemoveRoleAsync(jrole);
                 }
                 if (message.Content.ToLowerInvariant().Contains("jojo"))
                 {

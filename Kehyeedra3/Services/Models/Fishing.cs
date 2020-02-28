@@ -8,7 +8,7 @@ namespace Kehyeedra3.Services.Models
     {
         public ulong Id { get; set; } = 0; // this is userid incase you get alzheimers you stupid baby waa waa
         public ulong LastFish { get; set; } = 0;
-        public ulong Xp { get; set; } = 0;
+        public ulong Xp { get; set; } = 50;
         public ulong TXp { get; set; } = 0;
         public ulong Lvl { get; set; } = 0;
 
@@ -49,7 +49,7 @@ namespace Kehyeedra3.Services.Models
         Psychedelica = 6,
         //uncommon
         Gigacrab = 7,
-        Frogfish = 8,
+        Dopefish = 8,
         Stargazer = 9,
         Isopod = 10,
         Sheephead = 11,
@@ -57,7 +57,7 @@ namespace Kehyeedra3.Services.Models
         Cod = 12,
         Salmon = 13,
         Pufferfish = 14,
-        Bass = 15,
+        Shrimp = 15,
         Crayfish = 16,
         Betta = 17,
         Carp = 18,

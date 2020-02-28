@@ -10,7 +10,7 @@ namespace Kehyeedra3
         public static void InstallEventHandlers()
         {
             _bot.Log += _bot_Log;
-            _bot.UserVoiceStateUpdated += _bot_UserVoiceStateUpdated;
+            //_bot.UserVoiceStateUpdated += _bot_UserVoiceStateUpdated;
             _cmds.CommandExecuted += _cmds_CommandExecuted;
         }
 
@@ -30,34 +30,34 @@ namespace Kehyeedra3
         }
 
         //voice join/leave add/remove role
-        static async Task _bot_UserVoiceStateUpdated(Discord.WebSocket.SocketUser arg1, Discord.WebSocket.SocketVoiceState arg2, Discord.WebSocket.SocketVoiceState arg3)
-        {
-            if (!arg1.IsBot)
-            {
-                if (arg2.VoiceChannel == null && arg3.VoiceChannel != null)
-                {
-                    IGuild guild = arg3.VoiceChannel.Guild;
-                    if (guild.Id == 296739813380587521)
-                    {
-                        Console.WriteLine($"{arg1.Username} joined voice on Gulag");
-                        var role = guild.GetRole(411185260819251211);
-                        var user = await guild.GetUserAsync(arg1.Id);
-                        await user.AddRoleAsync(role);
-                    }
-                }
-                if (arg2.VoiceChannel != null && arg3.VoiceChannel == null)
-                {
-                    IGuild guild = arg2.VoiceChannel.Guild;
-                    if (guild.Id == 296739813380587521)
-                    {
-                        Console.WriteLine($"{arg1.Username} left voice on Gulag");
-                        var role = guild.GetRole(411185260819251211);
-                        var user = await guild.GetUserAsync(arg1.Id);
-                        await user.RemoveRoleAsync(role);
-                    }
-                }
-            }
-        }
+        //static async Task _bot_UserVoiceStateUpdated(Discord.WebSocket.SocketUser arg1, Discord.WebSocket.SocketVoiceState arg2, Discord.WebSocket.SocketVoiceState arg3)
+        //{
+        //    if (!arg1.IsBot)
+        //    {
+        //        if (arg2.VoiceChannel == null && arg3.VoiceChannel != null)
+        //        {
+        //            IGuild guild = arg3.VoiceChannel.Guild;
+        //            if (guild.Id == 296739813380587521)
+        //            {
+        //                Console.WriteLine($"{arg1.Username} joined voice on Gulag");
+        //                var role = guild.GetRole(411185260819251211);
+        //                var user = await guild.GetUserAsync(arg1.Id);
+        //                await user.AddRoleAsync(role);
+        //            }
+        //        }
+        //        if (arg2.VoiceChannel != null && arg3.VoiceChannel == null)
+        //        {
+        //            IGuild guild = arg2.VoiceChannel.Guild;
+        //            if (guild.Id == 296739813380587521)
+        //            {
+        //                Console.WriteLine($"{arg1.Username} left voice on Gulag");
+        //                var role = guild.GetRole(411185260819251211);
+        //                var user = await guild.GetUserAsync(arg1.Id);
+        //                await user.RemoveRoleAsync(role);
+        //            }
+        //        }
+        //    }
+        //}
 
         private static Task _bot_Log(LogMessage message)
         {
