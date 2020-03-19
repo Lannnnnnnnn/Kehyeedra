@@ -110,21 +110,31 @@ namespace Kehyeedra3
         public async Task HelpCommand()
         {
             EmbedBuilder embed = new EmbedBuilder();
-            embed.AddField("help", "Shows this thing");
             embed.AddField("ping", "Shows ping to server");
             embed.AddField("commands", "Lists commands");
             embed.AddField("command", "Tells what parameters a command uses");
+            embed.AddField("help", "Shows this thing");
+
             embed.AddField("delet", "Posts a delet this image. Can be used on other channels.");
             embed.AddField("ratetrap", "Rates your or another person's trap potential as a percentage");
             embed.AddField("8b", "Gives a prediction like a generic 8ball command that every self respecting discord bot must have");
-            embed.AddField("AIMLbot", "Mention me to talk with me (don't expect intelligence)");
             embed.AddField("math", "It's a calculator, that's what compooter do");
             embed.AddField("roll", "Rolls dice. Eg. 'roll d20'");
+            embed.AddField("remind","Reminds you in a given time. (days, hours, minutes) Eg. 'remind 1 2 3 wash hands' would remind you in 1 day, 2 hours, 3 minutes to wash your hands");
+            embed.AddField("dab", "Dabs a person");
+
             embed.AddField("mine", "Mines %coins");
-            embed.AddField("bet", "Gamble %coins in units of 0.0001%");
-            embed.AddField("balance", "Displays the percentage of the total currency you own");
+            embed.AddField("fish", "Cast your line into the abyss, see if something bites?");
+            embed.AddField("inventory, inv", "Shows the fish you have currently. Might show other things in the distant future.");
+            //embed.AddField("buy", " ");
+            //embed.AddField("sell"," ");
+            embed.AddField("balance, bal", "Displays the percentage of the total currency you own");
             embed.AddField("bank", "Displays the percentage of total currency the bank owns");
+            embed.AddField("bet", "Gamble %coins in units of 0.0001%");
+            embed.AddField("leaderboard, lb", "Shows the top 10 people in regards to % money as well as how much of the money in circulation they own");
             embed.AddField("give", "Give a user money. Eg. 'give @user [amount]'");
+
+            embed.AddField("AIMLbot", "Mention me to talk with me (don't expect intelligence)");
             embed.AddField("say", "Sends given message to given channel (admin only)");
             embed.AddField("adddelet", "Adds a delet this image to the bot from link or image (admin only)");
             await ReplyAsync("Here's a list of commands and what they do", false, embed.Build());
@@ -1206,6 +1216,7 @@ namespace Kehyeedra3
                 //reply
                 await ReplyAsync($"Set name to {_name}");
             }
+        /*
         [RequireRolePrecondition(AccessLevel.BotOwner)]
         [Command("getstamp")]
         public async Task YeedraStamp()
@@ -1214,9 +1225,9 @@ namespace Kehyeedra3
             await ReplyAsync($"{Context.User.Mention} {stamp}");
         }
         [RequireRolePrecondition(AccessLevel.BotOwner)]
-            [Command("savefile")]
+        [Command("savefile")]
 
-            public async Task SaveFile(string fday, string fscore)
+        public async Task SaveFile(string fday, string fscore)
         {
             string location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "drawtasks");
             string tlocation = ($"{location}/days.txt");
@@ -1239,7 +1250,7 @@ namespace Kehyeedra3
                 await ReplyAsync($"Post archived");
                 break;
             }
-        }
+        }*/
     }
 
     //public class _ : ModuleBase
