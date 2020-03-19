@@ -164,7 +164,7 @@ namespace Kehyeedra3
         [Command("delet")]
         public async Task DeletThis()
         {
-            string imgdirpath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Delet");
+            string imgdirpath = Path.Combine(Environment.CurrentDirectory, "Delet");
             DirectoryInfo imgdir = new DirectoryInfo(imgdirpath);
             var files = imgdir.GetFiles();
             var item = files[Bot._rnd.Next(0, files.Length)];
@@ -174,7 +174,7 @@ namespace Kehyeedra3
         [Command("delet")]
         public async Task DeletThis(ITextChannel channel)
         {
-            string imgdirpath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Delet");
+            string imgdirpath = Path.Combine(Environment.CurrentDirectory, "Delet");
             DirectoryInfo imgdir = new DirectoryInfo(imgdirpath);
             var files = imgdir.GetFiles();
             var item = files[Bot._rnd.Next(0, files.Length)];
@@ -1171,7 +1171,7 @@ namespace Kehyeedra3
                     Uri link = new Uri(item.Url);
                     using (WebClient _webclient = new WebClient())
                     {
-                        string location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "delet");
+                        string location = Path.Combine(Environment.CurrentDirectory, "delet");
                         if (!Directory.Exists(location))
                             Directory.CreateDirectory(location);
                         location += "/" + item.Filename;
@@ -1188,7 +1188,7 @@ namespace Kehyeedra3
                 Uri link = new Uri(url);
                 using (WebClient _webclient = new WebClient())
                 {
-                    string location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"delet");
+                    string location = Path.Combine(Environment.CurrentDirectory, $"delet");
                     if (!Directory.Exists(location))
                         Directory.CreateDirectory(location);
                     location += "/" + Guid.NewGuid() + ".jpg";
@@ -1229,7 +1229,7 @@ namespace Kehyeedra3
 
         public async Task SaveFile(string fday, string fscore)
         {
-            string location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "drawtasks");
+            string location = Path.Combine(Environment.CurrentDirectory, "drawtasks");
             string tlocation = ($"{location}/days.txt");
             var attachments = Context.Message.Attachments;
             string fname = $"{fday}-{fscore}";

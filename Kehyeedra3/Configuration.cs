@@ -8,7 +8,7 @@ namespace Kehyeedra3
     class Configuration
     {
         [JsonIgnore]
-        public static readonly string appdir = AppDomain.CurrentDomain.BaseDirectory;
+        public static readonly string appdir = Environment.CurrentDirectory;
         public string Prefix { get; set; }
         public string Token { get; set; }
         public int Shards { get; set; }

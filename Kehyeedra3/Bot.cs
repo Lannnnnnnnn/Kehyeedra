@@ -33,23 +33,23 @@ namespace Kehyeedra3
         public static ReminderService RmService;
         string[] rcsounds = new string[]
         {
-                AppContext.BaseDirectory + @"Audio\goblin_death.wav",
-                AppContext.BaseDirectory + @"Audio\cough1.wav",
-                AppContext.BaseDirectory + @"Audio\cough2.wav",
-                AppContext.BaseDirectory + @"Audio\wilhelmcough.wav",
-                AppContext.BaseDirectory + @"Audio\trapcough1.wav",
-                AppContext.BaseDirectory + @"Audio\trapcough2.wav",
-                AppContext.BaseDirectory + @"Audio\h3h3cough1.wav",
-                AppContext.BaseDirectory + @"Audio\h3h3cough2.wav",
-                AppContext.BaseDirectory + @"Audio\h3h3cough3.wav",
-                AppContext.BaseDirectory + @"Audio\h3h3cough4.wav",
-                AppContext.BaseDirectory + @"Audio\h3h3cough5.wav",
-                AppContext.BaseDirectory + @"Audio\sodocough.mp3",
-                AppContext.BaseDirectory + @"Audio\dbzscream.wav",
-                AppContext.BaseDirectory + @"Audio\healthycough1.wav",
-                AppContext.BaseDirectory + @"Audio\poohcough1.wav",
-                AppContext.BaseDirectory + @"Audio\jontronooh.wav",
-                AppContext.BaseDirectory + @"Audio\deep.wav"
+                Environment.CurrentDirectory + @"Audio\goblin_death.wav",
+                Environment.CurrentDirectory + @"Audio\cough1.wav",
+                Environment.CurrentDirectory + @"Audio\cough2.wav",
+                Environment.CurrentDirectory + @"Audio\wilhelmcough.wav",
+                Environment.CurrentDirectory + @"Audio\trapcough1.wav",
+                Environment.CurrentDirectory + @"Audio\trapcough2.wav",
+                Environment.CurrentDirectory + @"Audio\h3h3cough1.wav",
+                Environment.CurrentDirectory + @"Audio\h3h3cough2.wav",
+                Environment.CurrentDirectory + @"Audio\h3h3cough3.wav",
+                Environment.CurrentDirectory + @"Audio\h3h3cough4.wav",
+                Environment.CurrentDirectory + @"Audio\h3h3cough5.wav",
+                Environment.CurrentDirectory + @"Audio\sodocough.mp3",
+                Environment.CurrentDirectory + @"Audio\dbzscream.wav",
+                Environment.CurrentDirectory + @"Audio\healthycough1.wav",
+                Environment.CurrentDirectory + @"Audio\poohcough1.wav",
+                Environment.CurrentDirectory + @"Audio\jontronooh.wav",
+                Environment.CurrentDirectory + @"Audio\deep.wav"
         };
 
         public async Task CreateBot()
@@ -167,7 +167,7 @@ namespace Kehyeedra3
 
         public static void EnsureConfigExists()
         {
-            string storage = AppDomain.CurrentDomain.BaseDirectory;
+            string storage = Environment.CurrentDirectory;
             if (!Directory.Exists(Path.Combine(storage, "storage")))
                 Directory.CreateDirectory(Path.Combine(storage, "storage"));
 
@@ -186,7 +186,7 @@ namespace Kehyeedra3
         {
             try
             {
-                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config",
+                string path = Path.Combine(Environment.CurrentDirectory, "config",
                     "Settings.xml");
                 if (File.Exists(path))
                 {
@@ -195,7 +195,7 @@ namespace Kehyeedra3
                     ChatService.isAcceptingUserInput = false;
                     ChatService.loadAIMLFromFiles();
                     ChatService.isAcceptingUserInput = true;
-                    PathToUserData = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "aimlusers");
+                    PathToUserData = Path.Combine(Environment.CurrentDirectory, "aimlusers");
                     Console.WriteLine("Loaded: Chat Service");
                 }
                 else { }
