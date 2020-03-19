@@ -92,7 +92,7 @@ namespace Kehyeedra3
             InstallChatService();
 
             Clockboy.Elapsed += Clockboy_Elapsed;
-            Clockboy.Interval = 3600000;
+            Clockboy.Interval = SRandom.Next(3600000, 14400000);
             //1200000 = 20 minutes
 
             RmService = new ReminderService();

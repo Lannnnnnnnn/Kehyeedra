@@ -235,9 +235,8 @@ namespace Kehyeedra3
         public async Task RollDice([Remainder] string input)
         {
             int dinput = int.Parse(input.Substring(input.IndexOf("d")).Replace("d", ""));
-            Random rando = new Random();
-            int output = rando.Next(dinput+1);
-            await Context.Channel.SendMessageAsync("" + output);
+            int output = SRandom.Next(dinput);
+            await Context.Channel.SendMessageAsync("" + output+1);
         }
         [Command("remind")]
         public async Task Reminder(ulong d, ulong h, ulong m, [Remainder] string r)
@@ -271,8 +270,8 @@ namespace Kehyeedra3
             var drole = Context.Guild.GetRole(682109241363922965);
             if (user.RoleIds.Any(id => id == 682109241363922965))
             {
-                await ouser.AddRoleAsync(drole);
                 await user.RemoveRoleAsync(drole);
+                await ouser.AddRoleAsync(drole);
                 await Context.Channel.SendMessageAsync($"*{ouser.Mention} the power of daycare rests in the palm of your hands*");
             }
             else
@@ -373,62 +372,7 @@ namespace Kehyeedra3
                 "you get scared and curb stomp it, shattering it",
                 "the **Goblins** claim rightful possession of it"
         };
-        /*
-               readonly FishSpecies[] rfish = new FishSpecies[]
-               {
-                       FishSpecies.,
-                       FishSpecies.,
-                       FishSpecies.,
-                       FishSpecies.,
-                       FishSpecies.
-               };
-               readonly string[] rfishmotes = new string[]
-               {
-                       "",
 
-                       ,
-                       "",
-                       "<a:psychedelicaleft:682606276592664666><a:psychedelicaright:682606278354141249>"
-               };
-               readonly FishSpecies[] ufish = new FishSpecies[]
-               {
-                       FishSpecies.Gigacrab,
-                       FishSpecies.Dopefish,
-                       FishSpecies.Stargazer,
-                       FishSpecies.Isopod,
-                       FishSpecies.Sheephead,
-               };
-               readonly string[] ufishmotes = new string[]
-       {
-                       "<:gigacrab:681871426382594208>",
-                       "<:missingUnc:682586846857003064>[Dopefish]",
-                       "<:missingUnc:682586846857003064>[Stargazer]",
-                       "<:missingUnc:682586846857003064>[Isopod]",
-                       "<:sheepheadleft:681200891810021376><:sheepheadright:681200891608563767>"
-       };
-               readonly FishSpecies[] cfish = new FishSpecies[]
-               {
-                       FishSpecies.Cod,
-                       FishSpecies.Salmon,
-                       FishSpecies.Shrimp,
-                       FishSpecies.Crayfish,
-                       FishSpecies.Betta,
-                       FishSpecies.Pufferfish,
-                       FishSpecies.Carp,
-                       FishSpecies.Megacrab
-               };
-               readonly string[] cfishmotes = new string[]
-       {
-                       "<:codleft:681182238448418891><:codright:681182238628511747>",
-                       "<:missingCom:682586847079432217> [Salmon]",
-                       "<:missingCom:682586847079432217> [Shrimp]",
-                       "<:missingCom:682586847079432217> [Crayfish]",
-                       "<:missingCom:682586847079432217> [Betta]",
-                       "<:missingCom:682586847079432217> [Pufferfish]",
-                       "<:missingCom:682586847079432217> [Carp]",
-                       "<:megacrab:681871426319286302>"
-       };
-       */
         readonly string o = "<:ye:677089325208305665>";
         readonly string n = "<:no:677091514249248778>";
         readonly string ye = "<:ya:677179974154715146>";
@@ -582,24 +526,36 @@ namespace Kehyeedra3
 
                 Fish fish;
 
-                if (rarity == 207)
+                if (rarity == 207 || rarity == 277)
                 {
-                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
-                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                    weight = SRandom.Next(200, 4001);
-                    xp = 100;
+                    rarity = Convert.ToUInt64(SRandom.Next(207, 301))+level;
+                    if (rarity > 250)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        weight = SRandom.Next(200, 4001);
+                        xp = 100;
+                    }
+                    else
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 20;
+                    }
                 }
-                else if (rarity > 200)
+
+                else if (rarity > 170)
                 {
-                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
-                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                    xp = 20;
-                }
-                else if (rarity > 180)
-                {
+                    rarity = Convert.ToUInt64(SRandom.Next(180, 281));
                     List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
                     fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                     xp = 10;
+                    if (rarity > 260)
+                    {
+                        possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 20;
+                    }
                 }
                 else
                 {
@@ -607,52 +563,6 @@ namespace Kehyeedra3
                     fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                     xp = 5;
                 }
-
-
-
-
-                //if (rarity > 200)
-                //{
-                //    rar = "*Rare*";
-                //    rarmult = FishRarity.Rare;
-                //    int num = SRandom.Next(rfish.Length);
-                //    fish = Fish.Name;
-                //    emote = Fish.Emote[num];
-                //    xp = 20;
-                //}
-                //else
-                //{
-                //    if (rarity > 180)
-                //    {
-                //        rar = "*Uncommon*";
-                //        rarmult = FishRarity.Uncommon;
-                //        int num = SRandom.Next(ufish.Length);
-                //        fish = ufish[num];
-                //        emote = ufishmotes[num];
-                //        xp = 10;
-                //    }
-                //    else
-                //    {
-                //        if (rarity == 207)
-                //        {
-                //            rar = "***Legendary***";
-                //            rarmult = FishRarity.Legendary;
-                //            fish = FishSpecies.LuckyCatfish;
-                //            
-                //            emote = "<a:catfishleft:682655661422542888><a:catfishright:682655661481525284>";
-                //            xp = 100;
-                //        }
-                //        else
-                //        {
-                //            rar = "*Common*";
-                //            rarmult = FishRarity.Common;
-                //            int num = SRandom.Next(cfish.Length);
-                //            fish = cfish[num];
-                //            emote = cfishmotes[num];
-                //            xp = 5;
-                //        }
-                //    }
-                //}
 
                 FishSize size;
 
@@ -744,55 +654,233 @@ namespace Kehyeedra3
             }
 
         }
-        [Command("inventory"),Alias("inv","fishinv")]
-        public async Task FishInventory()
+        [Command("inventory"), Alias("inv", "fishinv")]
+        public async Task FishInventory([Remainder]IGuildUser user = null)
         {
-            Fishing user;
+            if (user == null)
+                user = Context.User as IGuildUser;
+
+            Fishing feeshUser;
             Dictionary<FishSpecies, int[]> inv = new Dictionary<FishSpecies, int[]>();
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
-
-                if (user == null)
+                feeshUser = Database.Fishing.FirstOrDefault(x => x.Id == user.Id);
+                if (feeshUser == null)
                 {
-                    user = new Fishing
+                    feeshUser = new Fishing
                     {
-                        Id = Context.User.Id
+                        Id = user.Id
                     };
                     
-                    Database.Fishing.Add(user);
+                    Database.Fishing.Add(feeshUser);
                 }
                 else
                 {
-                    inv = user.GetInventory();
-                    
+                    inv = feeshUser.GetInventory();
                 }
 
                 await Database.SaveChangesAsync().ConfigureAwait(false);
             }
-            
-            if(inv.Any())
-            {
-                //TODO
-                /*
-                string inventory;
-                inv.ForEach(x =>
-                {
-                    string content = $"{x.Fish.Weight.ToString()} {x.Fish.Species.ToString()}\n";
-                });
 
-                await Context.Channel.SendMessageAsync($"");
-                */
+            if (inv.Any())
+            {
+                Dictionary<FishSpecies, int> small = new Dictionary<FishSpecies, int>();
+                Dictionary<FishSpecies, int> med = new Dictionary<FishSpecies, int>();
+                Dictionary<FishSpecies, int> large = new Dictionary<FishSpecies, int>();
+
+                foreach (var entry in inv)
+                {
+                    if(entry.Value.Count() > 0)
+                    {
+                        if (entry.Value[0] > 0)
+                        {
+                            small.Add(entry.Key, entry.Value[0]);
+                        }
+                    }
+                    if(entry.Value.Count() > 1)
+                    {
+                        if (entry.Value[1] > 0)
+                        {
+                            med.Add(entry.Key, entry.Value[1]);
+                        }
+                    }
+                    if(entry.Value.Count() > 2)
+                    {
+                        if (entry.Value[2] > 0)
+                        {
+                            large.Add(entry.Key, entry.Value[2]);
+                        }
+                    }
+                }
+
+                if (user.Id != Context.User.Id)
+                {
+                    await Context.Channel.SendMessageAsync($"FEESH INVENTOGleS of {user.Mention}");
+                }
+
+                if(small.Any())
+                {
+                    EmbedBuilder embed = new EmbedBuilder
+                    {
+                        Title = "SMONKL FEESH"
+                    };
+
+                    foreach (var entry in small)
+                    {
+                        if (entry.Key == FishSpecies.LuckyCatfish)
+                        {
+                            embed.AddField("Lucky Catfish", $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
+                        }
+                        else
+                        {
+                            embed.AddField(entry.Key.ToString(), $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
+                        }
+                    }
+
+                    await Context.Channel.SendMessageAsync($"", embed: embed.Build());
+                }
+                
+                if(med.Any())
+                {
+                    EmbedBuilder embed = new EmbedBuilder
+                    {
+                        Title = "MED FEESH"
+                    };
+
+                    foreach (var entry in med)
+                    {
+                        if (entry.Key == FishSpecies.LuckyCatfish)
+                        {
+                            embed.AddField("Lucky Catfish", $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
+                        }
+                        else
+                        {
+
+                            embed.AddField(entry.Key.ToString(), $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
+                        }
+                    }
+
+                    await Context.Channel.SendMessageAsync($"", embed: embed.Build());
+                }
+
+                if(large.Any())
+                {
+                    EmbedBuilder embed = new EmbedBuilder
+                    {
+                        Title = "LARG FEESH"
+                    };
+
+                    foreach (var entry in large)
+                    {
+                        if(entry.Key == FishSpecies.LuckyCatfish)
+                        {
+                            embed.AddField("Lucky Catfish", $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
+                        }
+                        else
+                        {
+                            embed.AddField(entry.Key.ToString(), $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
+                        }
+                    }
+
+                    await Context.Channel.SendMessageAsync($"", embed: embed.Build());
+                }
             }
             else
             {
                 await Context.Channel.SendMessageAsync("Go fish nigger").ConfigureAwait(false);
             }
         }
-        [Command("trade")]
-        public async Task Trading()
+        [Command("buy")]
+        public async Task TradingBuy(int amount, string itemtype, int price, [Remainder] string item)
         {
+            string contents = "trade info";
+            FishSize size = 0;
+            FishSpecies species = 0;
+            List<Fish> fishes = Fishing.GetFishList();
+            if (itemtype.ToLowerInvariant() == "fish")
+            {
+                if (item.ToLowerInvariant().Contains("large"))
+                {
+                    size = FishSize.Large;
+                }
+                else if (item.ToLowerInvariant().Contains("medium"))
+                {
+                    size = FishSize.Medium;
+                }
+                else if (item.ToLowerInvariant().Contains("small"))
+                {
+                    size = FishSize.Small;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your size is not up to my standards.");
+                    return;
+                }
+                if (fishes.Any(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())))
+                {
+                    species = fishes.FirstOrDefault(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())).Id;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} The goo pool contains no such fish.");
+                    return;
+                }
+                contents += $"\ntype: sell\nitem: {size} {species}\namount: {amount}\nprice: {price/10000d}%\n";
 
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to buy item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+
+                await Context.Channel.SendMessageAsync($"{contents}").ConfigureAwait(false);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid trade type. Come back when the error command is fixed lmaoy").ConfigureAwait(false);
+            }
+        }
+        [Command("sell")]
+        public async Task TradingSell(int amount, string itemtype, int price, [Remainder] string item)
+        {
+            string contents = "trade info";
+            FishSize size = 0;
+            FishSpecies species = 0;
+            List<Fish> fishes = Fishing.GetFishList();
+            if (itemtype.ToLowerInvariant() == "fish")
+            {
+                if (item.ToLowerInvariant().Contains("large"))
+                {
+                    size = FishSize.Large;
+                }
+                else if (item.ToLowerInvariant().Contains("medium"))
+                {
+                    size = FishSize.Medium;
+                }
+                else if (item.ToLowerInvariant().Contains("small"))
+                {
+                    size = FishSize.Small;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your size is not up to my standards.");
+                    return;
+                }
+                if (fishes.Any(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())))
+                {
+                    species = fishes.FirstOrDefault(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())).Id;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} The goo pool contains no such fish.");
+                    return;
+                }
+                contents += $"\ntype: sell\nitem: {size} {species}\namount: {amount}\nprice: {price / 10000d}%\n";
+
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to sell item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+
+                await Context.Channel.SendMessageAsync($"{contents}").ConfigureAwait(false);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid trade type. Come back when the error command is fixed lmaoy").ConfigureAwait(false);
+            }
         }
         [Command("balance"),Alias("bal","money")]
         public async Task Shekels([Remainder] IUser otherUser = null)
@@ -879,30 +967,21 @@ namespace Kehyeedra3
             {
                 wager = wager*4;
             }
+            else if (res1 >= 95)
+            {
+                wager = wager * 3;
+            }
+            else if (res1 == 77)
+            {
+                wager = wager * 7;
+            }
+            else if (res1 < 50)
+            {
+                wager = 0;
+            }
             else
             {
-                if (res1 >= 95)
-                {
-                    wager = wager * 3;
-                }
-                else
-                {
-                    if (res1 == 77)
-                    {
-                        wager = wager * 7;
-                    }
-                    else
-                    {
-                        if (res1 < 50)
-                        {
-                            wager = 0;
-                        }
-                        else
-                        {
-                            wager = wager * 2;
-                        }
-                    }
-                }
+                wager = wager * 2;
             }
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
@@ -928,18 +1007,15 @@ namespace Kehyeedra3
                             embed.AddField($"**Rolled: Lucky cat!**", $"Result: +{((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
                             await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
                         }
-                        else
+                        else if (((wager) - loss) > 0)
                         {
-                            if (((wager) - loss) > 0)
-                            {
-                                embed.AddField($"**Rolled: {res1}**", $"Result: +{((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
-                                await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
-                            }
-                            if (((wager) - loss) < 0)
-                            {
-                                embed.AddField($"**Rolled: {res1}**", $"Result: {((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
-                                await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
-                            }
+                            embed.AddField($"**Rolled: {res1}**", $"Result: +{((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
+                            await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
+                        }
+                        if (((wager) - loss) < 0)
+                        {
+                            embed.AddField($"**Rolled: {res1}**", $"Result: {((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
+                            await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
                         }
                     }
                     else
@@ -1014,7 +1090,7 @@ namespace Kehyeedra3
 
         }
     }
-    
+
     //public class Event : ModuleBase<ICommandContext> /////////////////////////
     //{
     //    [Command("coof"), Ratelimit(1, 1, Measure.Minutes)]
@@ -1027,7 +1103,7 @@ namespace Kehyeedra3
     //            var hearole = Context.Guild.GetRole(672759930666876991);
     //            if (name.RoleIds.Any(id => id == 672755435454988294))
     //            {
-    //                await ReplyAsync($"{name.Mention}'s hazmat suit is protecting them from the corona");
+    //                await ReplyAsync($"{name.Username}'s hazmat suit is protecting them from the corona");
     //            }
     //            else
     //            {
@@ -1036,7 +1112,7 @@ namespace Kehyeedra3
 
     //                Console.WriteLine($"{Context.User.Username} has infected {name.Username}");
 
-    //                await ReplyAsync($"{Context.User.Mention} has infected {name.Mention}");
+    //                await ReplyAsync($"{Context.User.Username} has infected {name.Username}");
     //                await ReplyAsync($"Corona has been cured for now haha yeah");
     //            }
     //        }
@@ -1051,7 +1127,7 @@ namespace Kehyeedra3
     //            var infrole = Context.Guild.GetRole(672517021732438026);
     //            if (name.RoleIds.Any(id => id == 672785044699611139))
     //            {
-    //                await ReplyAsync($"{name.Mention} absolutely refuses to be vaccinated");
+    //                await ReplyAsync($"{name.Username} absolutely refuses to be vaccinated");
     //            }
     //            else
     //            {
@@ -1062,18 +1138,18 @@ namespace Kehyeedra3
 
     //                    Console.WriteLine($"{Context.User.Username} has cured {name.Username}");
 
-    //                    await ReplyAsync($"{Context.User.Mention} has vaccinated {name.Mention}");
+    //                    await ReplyAsync($"{Context.User.Username} has vaccinated {name.Username}");
     //                }
     //                else
     //                {
-    //                    await ReplyAsync($"{name.Mention} is not infected??? are you super retarded???");
+    //                    await ReplyAsync($"{name.Username} is not infected??? are you super retarded???");
     //                }
     //            }
     //        }
     //    }
     //}
 
-        public class Admin : ModuleBase ///////////////////////////////////////////////
+    public class Admin : ModuleBase ///////////////////////////////////////////////
         {
         [RequireRolePrecondition(AccessLevel.ServerAdmin)]
             [Command("adddelet")]

@@ -109,18 +109,22 @@ namespace Kehyeedra3
                 }
                 var jrole = context.Guild.GetRole(375289794999091201);
                 var euser = await context.Guild.GetUserAsync(context.User.Id).ConfigureAwait(false);
-                var jas = await context.Guild.GetUserAsync(236952555265982464).ConfigureAwait(false);
-                if (euser.RoleIds.Any(id => id == 682109241363922965))
-                {
-                    if (message.Content.Contains("thot begone")) //add
-                    {
-                        await jas.AddRoleAsync(jrole);
-                    }
-                }
-                if (message.Content.Contains("thot return")) //remove
-                {
-                    await jas.RemoveRoleAsync(jrole);
-                }
+                //var jas = await context.Guild.GetUserAsync(236952555265982464).ConfigureAwait(false);
+                //var cat = await context.Guild.GetUserAsync(194439970797256706).ConfigureAwait(false);
+                //if (euser.RoleIds.Any(id => id == 682109241363922965))
+                //{
+                //    if (message.Content.ToLowerInvariant().Contains("thot begone"))
+                //    {
+                //        await jas.AddRoleAsync(jrole);
+                //        await cat.AddRoleAsync(jrole);
+                //    }
+                //    if (message.Content.ToLowerInvariant().Contains("thot return"))
+                //    {
+                //        await jas.RemoveRoleAsync(jrole);
+                //        await cat.RemoveRoleAsync(jrole);
+                //    }
+                //}
+
                 if (message.Content.ToLowerInvariant().Contains("jojo"))
                 {
                     var jojoke = WeebClient.DownloadString("https://api.skuldbot.uk/fun/jojoke/?raw");
