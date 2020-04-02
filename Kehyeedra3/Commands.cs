@@ -13,6 +13,7 @@ using MySql.Data.MySqlClient;
 using Kehyeedra3.Services.Models;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Internal;
+using Discord.Addons.Interactive;
 
 namespace Kehyeedra3
 {
@@ -23,7 +24,7 @@ namespace Kehyeedra3
         public async Task Pong()
         {
             await Context.Channel.TriggerTypingAsync();
-            await ReplyAsync($"My current ping is {Bot._bot.GetShardFor(Context.Guild).Latency}ms");
+            await ReplyAsync($"My current ping is {Bot._bot.Latency}ms");
         }
     }
     [Group]
@@ -158,7 +159,7 @@ namespace Kehyeedra3
     //        await Bot.AudioService.SendAudioAsync(Context.Guild, Context.Channel, song);
     //    }
     //}
-    public class Stuff : ModuleBase ///////////////////////////////////////////////
+    public class Stuff : InteractiveBase<SocketCommandContext> ///////////////////////////////////////////////
     {
 
         [Command("delet")]
@@ -276,9 +277,9 @@ namespace Kehyeedra3
         [Command("grant")]
         public async Task Daycare(IGuildUser ouser)
         {
-            var user = await Context.Guild.GetUserAsync(Context.User.Id).ConfigureAwait(false);
+            var user = Context.Guild.GetUser(Context.User.Id);
             var drole = Context.Guild.GetRole(682109241363922965);
-            if (user.RoleIds.Any(id => id == 682109241363922965))
+            if (user.Roles.Any(x => x.Id == 682109241363922965))
             {
                 await user.RemoveRoleAsync(drole);
                 await ouser.AddRoleAsync(drole);
@@ -303,7 +304,7 @@ namespace Kehyeedra3
         }
     }
 
-    public class Economy : ModuleBase<ICommandContext>
+    public class Economy : InteractiveBase<SocketCommandContext>
     {
         readonly string[] ores = new string[]
         {
@@ -543,8 +544,7 @@ namespace Kehyeedra3
                     {
                         List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                        weight = SRandom.Next(200, 4001);
-                        xp = 100;
+                        xp = 10;
                     }
                     else
                     {
@@ -576,12 +576,28 @@ namespace Kehyeedra3
 
                 FishSize size;
 
+                if (fish.Rarity == FishRarity.Legendary)
+                {
+                    weight = 100;
+                }
+
                 if (weight >= 75)
                 {
                     size = FishSize.Medium;
                     if (weight >= (100 - Convert.ToInt32(level)))
                     {
                         weight = SRandom.Next(1, 201);
+                    }
+
+                    if (fish.Rarity == FishRarity.Legendary)
+                    {
+                        weight = SRandom.Next(200 + Convert.ToInt32(level*2), 4001);
+                    }
+
+                    if (weight > 50)
+                    {
+                        double w = Convert.ToDouble(weight);
+                        xp += Convert.ToUInt64(Math.Round((xp * w / 100), 0, MidpointRounding.ToEven));
                     }
                 }
                 else
@@ -725,14 +741,14 @@ namespace Kehyeedra3
 
                 if (user.Id != Context.User.Id)
                 {
-                    await Context.Channel.SendMessageAsync($"FEESH INVENTOGleS of {user.Mention}");
+                    await Context.Channel.SendMessageAsync($"arr matey this be {user.Mention}'s locker");
                 }
 
                 if(small.Any())
                 {
                     EmbedBuilder embed = new EmbedBuilder
                     {
-                        Title = "SMONKL FEESH"
+                        Title = "small mateys"
                     };
 
                     foreach (var entry in small)
@@ -754,7 +770,7 @@ namespace Kehyeedra3
                 {
                     EmbedBuilder embed = new EmbedBuilder
                     {
-                        Title = "MED FEESH"
+                        Title = "medium mateys"
                     };
 
                     foreach (var entry in med)
@@ -777,7 +793,7 @@ namespace Kehyeedra3
                 {
                     EmbedBuilder embed = new EmbedBuilder
                     {
-                        Title = "LARG FEESH"
+                        Title = "large mateys"
                     };
 
                     foreach (var entry in large)
@@ -800,98 +816,145 @@ namespace Kehyeedra3
                 await Context.Channel.SendMessageAsync("Go fish nigger").ConfigureAwait(false);
             }
         }
-        [Command("buy")]
-        public async Task TradingBuy(int amount, string itemtype, int price, [Remainder] string item)
-        {
-            string contents = "trade info";
-            FishSize size = 0;
-            FishSpecies species = 0;
-            List<Fish> fishes = Fishing.GetFishList();
-            if (itemtype.ToLowerInvariant() == "fish")
-            {
-                if (item.ToLowerInvariant().Contains("large"))
-                {
-                    size = FishSize.Large;
-                }
-                else if (item.ToLowerInvariant().Contains("medium"))
-                {
-                    size = FishSize.Medium;
-                }
-                else if (item.ToLowerInvariant().Contains("small"))
-                {
-                    size = FishSize.Small;
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your size is not up to my standards.");
-                    return;
-                }
-                if (fishes.Any(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())))
-                {
-                    species = fishes.FirstOrDefault(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())).Id;
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} The goo pool contains no such fish.");
-                    return;
-                }
-                contents += $"\ntype: sell\nitem: {size} {species}\namount: {amount}\nprice: {price/10000d}%\n";
+        //[Command("tradebuy", RunMode = RunMode.Async)]
+        //public async Task TradingBuy(int amount, string itemtype, int price, [Remainder] string item)
+        //{
+        //    using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+        //    {
+        //        var KehUser = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
+        //        if (itemtype.ToLowerInvariant() == "fish")
+        //        {
+        //            FishSize size = 0;
+        //            FishSpecies species = 0;
+        //            List<Fish> fishes = Fishing.GetFishList();
 
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to buy item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+        //            if (item.ToLowerInvariant().Contains("large"))
+        //            {
+        //                size = FishSize.Large;
+        //            }
+        //            else if (item.ToLowerInvariant().Contains("medium"))
+        //            {
+        //                size = FishSize.Medium;
+        //            }
+        //            else if (item.ToLowerInvariant().Contains("small"))
+        //            {
+        //                size = FishSize.Small;
+        //            }
+        //            else
+        //            {
+        //                await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your size is not up to my standards.");
+        //                return;
+        //            }
 
-                await Context.Channel.SendMessageAsync($"{contents}").ConfigureAwait(false);
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid trade type. Come back when the error command is fixed lmaoy").ConfigureAwait(false);
-            }
-        }
-        [Command("sell")]
-        public async Task TradingSell(int amount, string itemtype, int price, [Remainder] string item)
-        {
-            string contents = "trade info";
-            FishSize size = 0;
-            FishSpecies species = 0;
-            List<Fish> fishes = Fishing.GetFishList();
-            if (itemtype.ToLowerInvariant() == "fish")
-            {
-                if (item.ToLowerInvariant().Contains("large"))
-                {
-                    size = FishSize.Large;
-                }
-                else if (item.ToLowerInvariant().Contains("medium"))
-                {
-                    size = FishSize.Medium;
-                }
-                else if (item.ToLowerInvariant().Contains("small"))
-                {
-                    size = FishSize.Small;
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your size is not up to my standards.");
-                    return;
-                }
-                if (fishes.Any(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())))
-                {
-                    species = fishes.FirstOrDefault(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())).Id;
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} The goo pool contains no such fish.");
-                    return;
-                }
-                contents += $"\ntype: sell\nitem: {size} {species}\namount: {amount}\nprice: {price / 10000d}%\n";
+        //            if (fishes.Any(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())))
+        //            {
+        //                species = fishes.FirstOrDefault(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())).Id;
+        //            }
+        //            else
+        //            {
+        //                await Context.Channel.SendMessageAsync($"{Context.User.Mention} The goo pool contains no such fish.");
+        //                return;
+        //            }
 
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to sell item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+        //            if (Database.StoreFronts.Any(x=> x.StoreItemType == StoreItemType.Fish))
+        //            {
+        //                var stores = Database.StoreFronts.Where(x => x.StoreItemType == StoreItemType.Fish).ToList();
 
-                await Context.Channel.SendMessageAsync($"{contents}").ConfigureAwait(false);
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid trade type. Come back when the error command is fixed lmaoy").ConfigureAwait(false);
-            }
-        }
+        //                stores.Shuffle();
+
+        //                var store = stores.FirstOrDefault();
+
+        //                if(store.Items.Any(x=>x.Item.ToLowerInvariant() == item.ToLowerInvariant()))
+        //                {
+        //                    var itm = store.Items.FirstOrDefault(x => x.Item.ToLowerInvariant() == item.ToLowerInvariant());
+
+        //                    if(itm.Price * amount <= KehUser.Money)
+        //                    {
+        //                        if (itm.Amount >= amount)
+        //                        {
+        //                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to buy item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+        //                        }
+        //                        else
+        //                        {
+        //                            await ReplyAsync("Whoa slow down there buckaroo, they ain't selling that much, go sit in the corner and think about what you've done").ConfigureAwait(false);
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        await ReplyAsync("Nigger slow down, you aint got the cash monee to make that purchase smh frfr onjah").ConfigureAwait(false);
+        //                    }
+        //                }
+        //            }
+        //            else
+        //            {
+        //                await ReplyAsync("No one is selling, so you can't buy lmao, big stinky");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid trade type. Come back when the error command is fixed lmaoy").ConfigureAwait(false);
+        //        }
+        //    }
+        //}
+        //[Command("tradesell")]
+        //public async Task TradingSell(int amount, string itemtype, int price, [Remainder] string item)
+        //{
+        //    string contents = "trade info";
+        //    FishSize size = 0;
+        //    FishSpecies species = 0;
+        //    List<Fish> fishes = Fishing.GetFishList();
+        //    if (itemtype.ToLowerInvariant() == "fish")
+        //    {
+        //        if (item.ToLowerInvariant().Contains("large"))
+        //        {
+        //            size = FishSize.Large;
+        //        }
+        //        else if (item.ToLowerInvariant().Contains("medium"))
+        //        {
+        //            size = FishSize.Medium;
+        //        }
+        //        else if (item.ToLowerInvariant().Contains("small"))
+        //        {
+        //            size = FishSize.Small;
+        //        }
+        //        else
+        //        {
+        //            await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your size is not up to my standards.");
+        //            return;
+        //        }
+        //        if (fishes.Any(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())))
+        //        {
+        //            species = fishes.FirstOrDefault(z => item.ToLowerInvariant().Contains(z.Name.ToLowerInvariant())).Id;
+        //        }
+        //        else
+        //        {
+        //            await Context.Channel.SendMessageAsync($"{Context.User.Mention} The goo pool contains no such fish.");
+        //            return;
+        //        }
+        //        contents += $"\ntype: sell\nitem: {size} {species}\namount: {amount}\nprice: {price / 10000d}%\n";
+
+        //        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to sell item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+
+        //        await Context.Channel.SendMessageAsync($"{contents}").ConfigureAwait(false);
+        //    }
+        //    else
+        //    {
+        //        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid trade type. Come back when the error command is fixed lmaoy").ConfigureAwait(false);
+        //    }
+        //}
+        //[Command("tradeoffers")]
+        //public async Task ShowOffers(bool localOffers = true)
+        //{
+        //    using (var database = new ApplicationDbContextFactory().CreateDbContext())
+        //    {
+        //        string message = "";
+        //        if (localOffers)
+        //        {
+
+        //        }
+        //    }
+        //}
+
         [Command("balance"),Alias("bal","money")]
         public async Task Shekels([Remainder] IUser otherUser = null)
         {

@@ -20,7 +20,7 @@ namespace Kehyeedra3.Services
                 List<Reminder> toRemove = new List<Reminder>();
                 while (true)
                 {
-                    if(Database.Reminders.Any() && Bot._bot != null && Bot._bot.Shards.All(x=>x.ConnectionState == Discord.ConnectionState.Connected))
+                    if(Database.Reminders.Any() && Bot._bot != null && Bot._bot.ConnectionState == Discord.ConnectionState.Connected)
                     {
                         foreach(var x in Database.Reminders)
                         {

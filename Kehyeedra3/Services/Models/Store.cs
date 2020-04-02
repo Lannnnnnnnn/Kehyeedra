@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kehyeedra3.Services.Models
 {
     public class StoreFront
     {
-        public ulong Id { get; set; } = 0;
+        [Key]
+        public ulong Id { get; set; }
         public ulong UserId { get; set; } = 0;
         public StoreItemType StoreItemType { get; set; } = 0;
 
@@ -20,9 +22,8 @@ namespace Kehyeedra3.Services.Models
 
     public class StoreInventory
     {
-        public ulong ItemId { get; set; } = 0;
-        public ulong UserId { get; set; } = 0;
-        public StoreItemType StoreItemType { get; set; } = 0;
+        [Key]
+        public ulong InvId { get; set; }
         public string Item { get; set; } = "";
         public int Amount { get; set; } = 0;
         public int Price { get; set; } = 0;
@@ -30,14 +31,15 @@ namespace Kehyeedra3.Services.Models
 
     public class ItemOffer
     {
+        [Key]
         public ulong OfferId { get; set; }
         public ulong BuyerId { get; set; }
         public ulong StoreId { get; set; }
-        public StoreItemType StoreType { get; set; }
         public ulong ItemId { get; set; }
         public int Amount { get; set; }
         public int OfferAmount { get; set; }
         public bool IsPurchaseFromStore { get; set; }
+        public bool IsSellOffer { get; set; } = false;
     }
 
     public static class StoreUtilities

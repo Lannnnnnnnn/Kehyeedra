@@ -98,7 +98,7 @@ namespace Kehyeedra3
                 var message = arg as SocketUserMessage;
                 if (message == null) return;
                 int argPos = 0;
-                var context = new CommandContext(_bot, message);
+                var context = new SocketCommandContext(_bot, message);
                 if (message.HasMentionPrefix(_bot.CurrentUser, ref argPos))
                 {
                     await KizunaAi(context, message.Content);
@@ -108,7 +108,7 @@ namespace Kehyeedra3
                     await context.Channel.SendMessageAsync($"B emoji detected. Proceed to kill yourself, {context.User.Mention}");
                 }
                 var jrole = context.Guild.GetRole(375289794999091201);
-                var euser = await context.Guild.GetUserAsync(context.User.Id).ConfigureAwait(false);
+                var euser = context.Guild.GetUser(context.User.Id);
                 //var jas = await context.Guild.GetUserAsync(236952555265982464).ConfigureAwait(false);
                 //var cat = await context.Guild.GetUserAsync(194439970797256706).ConfigureAwait(false);
                 //if (euser.RoleIds.Any(id => id == 682109241363922965))

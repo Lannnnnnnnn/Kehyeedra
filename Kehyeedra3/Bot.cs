@@ -11,20 +11,20 @@ using System.Net;
 using System.Net.Http;
 using Kehyeedra3.Services;
 using System.Threading;
+using Discord.Addons.Interactive;
 
 namespace Kehyeedra3
 {
     public class Bot
     {
         /// Star Vars
-        public static DiscordShardedClient _bot;
+        public static DiscordSocketClient _bot;
         public static System.Timers.Timer Clockboy;
         public static CommandService commands;
         public static AudioService AudioService;
         public static CommandService _cmds;
         public static IServiceProvider _dmap;
         public static CommandServiceConfig _cmdsconfig;
-        public static int Shards = 0;
         public static Random _rnd = new Random();
         public static AIMLbot.Bot ChatService;
         public static AIMLbot.User ChatUser;
@@ -60,18 +60,15 @@ namespace Kehyeedra3
 
             WeebClient = new WebClient();
             
-            _bot = new DiscordShardedClient(new DiscordSocketConfig()
+            _bot = new DiscordSocketClient(new DiscordSocketConfig()
             {
                 LogLevel = LogSeverity.Verbose,
                 DefaultRetryMode = RetryMode.AlwaysRetry,
                 HandlerTimeout = 10000,
-                ConnectionTimeout = 10000,
-                TotalShards = Config.Shards
+                ConnectionTimeout = 10000
             });
 
             AudioService = new AudioService();
-
-            Shards = _bot.Shards.Count;
 
             _cmds = new CommandService();
 
@@ -84,6 +81,7 @@ namespace Kehyeedra3
                 .AddSingleton(_bot)
                 .AddSingleton(_cmds)
                 .AddSingleton(AudioService)
+                .AddSingleton(new InteractiveService(_bot, TimeSpan.FromSeconds(30)))
                 .BuildServiceProvider();
 
             await CommandHandler.InstallCommands();
