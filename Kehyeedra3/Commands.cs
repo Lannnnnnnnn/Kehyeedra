@@ -593,10 +593,9 @@ namespace Kehyeedra3
                     {
                         weight = SRandom.Next(2000 + Convert.ToInt32(level*20), 40001);
                     }
-
-                    if (weight > 500)
+                    double w = Convert.ToDouble(weight);
+                    if (weight >= 1000)
                     {
-                        double w = Convert.ToDouble(weight);
                         xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
                     }
                 }
