@@ -522,25 +522,25 @@ namespace Kehyeedra3
 
             if (lastfish < time)
             {
-                int rari = (SRandom.Next(0, 201));
-                int weight = SRandom.Next(1, 151);
+                int rari = (SRandom.Next(0, 2001));
+                int weight = SRandom.Next(10+Convert.ToInt32(level*5), 1501);
                 ulong rarity;
 
                 if (level < 100)
                 {
-                    rarity = level + (ulong)rari;
+                    rarity = level*10 + (ulong)rari;
                 }
                 else
                 {
-                    rarity = 100 + (ulong)rari;
+                    rarity = 1000 + (ulong)rari;
                 }
 
                 Fish fish;
 
-                if (rarity == 207 || rarity == 277)
+                if (rarity == 2070 || rarity == 2770)
                 {
-                    rarity = Convert.ToUInt64(SRandom.Next(207, 301))+level;
-                    if (rarity > 250)
+                    rarity = Convert.ToUInt64(SRandom.Next(2007, 3001))+level*4;
+                    if (rarity > 2500)
                     {
                         List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
@@ -554,13 +554,13 @@ namespace Kehyeedra3
                     }
                 }
 
-                else if (rarity > 170)
+                else if (rarity > 1700)
                 {
-                    rarity = Convert.ToUInt64(SRandom.Next(180, 281));
+                    rarity = Convert.ToUInt64(SRandom.Next(1750, 2801));
                     List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
                     fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                     xp = 10;
-                    if (rarity > 260)
+                    if (rarity > 2600)
                     {
                         possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
@@ -578,26 +578,26 @@ namespace Kehyeedra3
 
                 if (fish.Rarity == FishRarity.Legendary)
                 {
-                    weight = 100;
+                    weight = 1000;
                 }
 
-                if (weight >= 75)
+                if (weight >= 750)
                 {
                     size = FishSize.Medium;
-                    if (weight >= (100 - Convert.ToInt32(level)))
+                    if (weight >= (1000 - Convert.ToInt32(level*2)))
                     {
-                        weight = SRandom.Next(1, 201);
+                        weight = SRandom.Next(10, 2001) + Convert.ToInt32(level*5);
                     }
 
                     if (fish.Rarity == FishRarity.Legendary)
                     {
-                        weight = SRandom.Next(200 + Convert.ToInt32(level*2), 4001);
+                        weight = SRandom.Next(2000 + Convert.ToInt32(level*20), 40001);
                     }
 
-                    if (weight > 50)
+                    if (weight > 500)
                     {
                         double w = Convert.ToDouble(weight);
-                        xp += Convert.ToUInt64(Math.Round((xp * w / 100), 0, MidpointRounding.ToEven));
+                        xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
                     }
                 }
                 else
@@ -605,7 +605,7 @@ namespace Kehyeedra3
                     size = FishSize.Small;
                 }
 
-                if (weight >= 150)
+                if (weight >= 1500)
                 {
                     size = FishSize.Large;
                 }
@@ -619,7 +619,7 @@ namespace Kehyeedra3
                     await Database.SaveChangesAsync().ConfigureAwait(false);
                 }
 
-                if (rarity > 20)
+                if (rarity > 200)
                 {
                     ulong toNextLvl = 0;
                     using (var Database = new ApplicationDbContextFactory().CreateDbContext())
@@ -667,7 +667,7 @@ namespace Kehyeedra3
                         await Database.SaveChangesAsync().ConfigureAwait(false); // :]
                     }
 
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n {fish.Emote} You have caught a {weight / 10d}kg **{fish.Name}**, rarity: {fish.Rarity}\nYou gain **{xp}**xp.\n{lvlUp}");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n {fish.Emote} You have caught a {weight / 100d}kg **{fish.Name}**, rarity: {fish.Rarity}\nYou gain **{xp}**xp.\n{lvlUp}");
                 }
                 else
                 {
