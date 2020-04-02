@@ -133,7 +133,7 @@ namespace Kehyeedra3.Services.Models
                 {
                     Id = FishSpecies.Cod,
                     Name = "Cod",
-                    Emote = "<:codleft:681182238448418891><:codright:681182238628511747>",
+                    Emote = "<:codleft:695304941715062887><:codright:695304941949943808>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
@@ -147,7 +147,7 @@ namespace Kehyeedra3.Services.Models
                 {
                     Id = FishSpecies.Shrimp,
                     Name = "Shrimp",
-                    Emote =  "<:missingCom:682586847079432217>[Shrimp]",
+                    Emote =  "<:shromp:695335369004023859>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
@@ -175,7 +175,7 @@ namespace Kehyeedra3.Services.Models
                 {
                     Id = FishSpecies.Carp,
                     Name = "Carp",
-                    Emote = "<:missingCom:682586847079432217>[Carp]",
+                    Emote = "<:koicarpleft:695318059925373029><:koicarpright:695318060051202118>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
