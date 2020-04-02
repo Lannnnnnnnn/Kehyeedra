@@ -130,6 +130,30 @@ namespace Kehyeedra3
                     var jojoke = WeebClient.DownloadString("https://api.skuldbot.uk/fun/jojoke/?raw");
                     await context.Channel.SendMessageAsync($"{context.User.Mention} is that a fucksnifflerling {jojoke} reference?");
                 }
+                
+                if (message.Channel is IGuildChannel chan)
+                {
+                    var perms = chan.GetPermissionOverwrite(_bot.CurrentUser);
+                    if (perms.HasValue)
+                    {
+                        if (perms.Value.SendMessages == PermValue.Deny) return;
+                    }
+                    var botGuild = _bot.GetGuild(chan.GuildId).GetUser(_bot.CurrentUser.Id);
+                    bool exit = false;
+
+                    botGuild.Roles.OrderByDescending(x => x.Position).ToList().ForEach(x =>
+                    {
+                        perms = chan.GetPermissionOverwrite(x);
+
+                        if (perms.HasValue)
+                        {
+                            if (perms.Value.SendMessages == PermValue.Deny) { exit = true; return; }
+                        }
+                    });
+
+                    if (exit) return;
+                }
+
                 if (!(message.HasStringPrefix(Configuration.Load().Prefix, ref argPos))) return;
                 {
                     var result = await _cmds.ExecuteAsync(context, argPos, _dmap);

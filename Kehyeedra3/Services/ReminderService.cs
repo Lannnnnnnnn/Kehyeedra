@@ -15,27 +15,31 @@ namespace Kehyeedra3.Services
         }
         public async Task Tick()
         {
-            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            while (true)
             {
-                List<Reminder> toRemove = new List<Reminder>();
-                while (true)
+                using (var Database = new ApplicationDbContextFactory().CreateDbContext())
                 {
+                    var reminders = Database.Reminders.ToList();
                     if(Database.Reminders.Any() && Bot._bot != null && Bot._bot.ConnectionState == Discord.ConnectionState.Connected)
                     {
-                        foreach(var x in Database.Reminders)
+                        bool hasChanged = false;
+                        foreach (var x in reminders)
                         {
                             if (x.Send <= DateTime.UtcNow.ToYeedraStamp())
                             {
                                 await SendReminderAsync(x).ConfigureAwait(false);
-                                toRemove.Add(x);
+                                Database.Reminders.Remove(x);
+                                hasChanged = true;
                             }
                         }
-                        Database.Reminders.RemoveRange(toRemove);
-                        await Database.SaveChangesAsync().ConfigureAwait(false);
-                        toRemove.Clear();
+
+                        if (hasChanged)
+                        {
+                            await Database.SaveChangesAsync().ConfigureAwait(false);
+                        }
                     }
-                    await Task.Delay(250);
                 }
+                await Task.Delay(250);
             }
         }
     }
