@@ -12,6 +12,7 @@ namespace Kehyeedra3.Services.Models
         public StoreItemType StoreItemType { get; set; } = 0;
 
         public ICollection<StoreInventory> Items { get; set; }
+        public ICollection<ItemOffer> Offers { get; set; }
     }
 
     public enum StoreItemType

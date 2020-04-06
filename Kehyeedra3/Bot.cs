@@ -20,7 +20,6 @@ namespace Kehyeedra3
         /// Star Vars
         public static DiscordSocketClient _bot;
         public static System.Timers.Timer Clockboy;
-        public static CommandService commands;
         public static AudioService AudioService;
         public static CommandService _cmds;
         public static IServiceProvider _dmap;
