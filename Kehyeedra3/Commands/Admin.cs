@@ -80,10 +80,7 @@ namespace Kehyeedra3.Commands
             User bank = Database.Users.FirstOrDefault(x => x.Id == 0);
 
             int existing = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                existing += Convert.ToInt32(users[i].Money);
-            }
+            users.ForEach(x => existing += Convert.ToInt32(x.Money));
             int difference = 1000000 - existing;
             string content = "";
             if (difference >= 0)
@@ -109,7 +106,7 @@ namespace Kehyeedra3.Commands
                     }
                     else
                     {
-                        await Context.Channel.SendMessageAsync($"Economy has been stabilized by removing {difference / 10000d} from bank");
+                        await Context.Channel.SendMessageAsync($"Economy has been stabilized by removing {0-difference / 10000d} from bank");
                     }
                 }
             }

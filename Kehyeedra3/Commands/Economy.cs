@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Kehyeedra3.Commands
@@ -104,6 +105,7 @@ namespace Kehyeedra3.Commands
                 var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
                 lastmine = user.LastMine;
                 user.LastMine = time;
+                user.Username = Context.User.Username;
                 await Database.SaveChangesAsync();
             }
             if (lastmine < time)
@@ -196,6 +198,7 @@ namespace Kehyeedra3.Commands
             ulong xp;
             ulong level;
             ulong lvlXp;
+            int rod;
             Dictionary<FishSpecies, int[]> inv = new Dictionary<FishSpecies, int[]>();
             List<Fish> fishes = Fishing.GetFishList();
 
@@ -220,6 +223,7 @@ namespace Kehyeedra3.Commands
                 lastfish = user.LastFish;
                 totalXp = user.TXp;
                 lvlXp = user.Xp;
+                rod = user.RodUsed;
 
                 await Database.SaveChangesAsync();
             }
@@ -245,9 +249,24 @@ namespace Kehyeedra3.Commands
 
                 if (rarity == 777 || (rarity > 2060 && rarity <= 2070) || (rarity > 2760 && rarity <= 2770))
                 {
-                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
-                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                    xp = 10;
+                    if (rod == 1)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Legendary).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 15;
+                    }
+                    else if (rod == 1)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Legendary).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 20;
+                    }
+                    else
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 10;
+                    }
                     if (rarity == 777)
                     {
                         xp = 77;
@@ -262,10 +281,26 @@ namespace Kehyeedra3.Commands
                     xp = 10;
                     if (rarity > 2600)
                     {
-                        possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
-                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                        xp = 20;
+                        if (rod == 1)
+                        {
+                            possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Rare).ToList();
+                            fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                            xp = 25;
+                        }
+                        else if (rod == 2)
+                        {
+                            possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Rare).ToList();
+                            fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                            xp = 30;
+                        }
+                        else
+                        {
+                            possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
+                            fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                            xp = 20;
+                        }
                     }
+
                 }
                 else
                 {
@@ -276,7 +311,7 @@ namespace Kehyeedra3.Commands
 
                 FishSize size;
 
-                if (fish.Rarity == FishRarity.Legendary)
+                if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary)
                 {
                     weight = 1000;
                 }
@@ -297,7 +332,7 @@ namespace Kehyeedra3.Commands
                     if (weight >= 1000)
                     {
                         xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
-                        if (fish.Rarity == FishRarity.Legendary)
+                        if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary)
                         {
                             if (xp < 100)
                             {
@@ -385,6 +420,51 @@ namespace Kehyeedra3.Commands
                 await Context.Channel.SendMessageAsync($"{Context.User.Mention} arrrrr-right, ye scurby bastard, I know yer eager t' scour the seven seas but ye needs t' wait till the next minute t' pillage the booty'o'the depths, savvy?");
             }
 
+        }
+        [Command("checkrod"),Summary("Displays what fishing rods you can use, as well as your currently equipped fishing rod")]
+        public async Task CheckRod()
+        {
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                await Context.Channel.SendMessageAsync($"You have unlocked fishing rods up to **T{user.RodOwned+1}**\nYou have currently equipped a **T{user.RodUsed+1}** rod");
+            }
+        }
+        [Command("setrod"),Summary("Set your fishing rod to the desired tier (for example: 'setrod 1' to set to default rod)")]
+        public async Task SetRod(byte tier)
+        {
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                if (tier - 1 <= user.RodOwned)
+                {
+                    user.RodUsed = Convert.ToByte(tier - 1);
+                    string rodtype = "";
+                    if (tier == 1)
+                    {
+                        rodtype = "Basic";
+                    }
+                    else if (tier == 2)
+                    {
+                        rodtype = "Reinforced";
+                    }
+                    else if (tier == 3)
+                    {
+                        rodtype = "Spectral";
+                    }
+                    else
+                    {
+                        rodtype = "Currently unobtainable";
+                    }
+                    await Context.Channel.SendMessageAsync($"You are now using a **{rodtype} (T{tier})** rod");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"You don't have that rod. You own rods up to **T{user.RodOwned+1}**");
+                }
+                await Database.SaveChangesAsync().ConfigureAwait(false);
+
+            }
         }
         [Command("inventory"), Alias("inv", "fishinv"), Summary("Shows the fish you have currently. Might show other things in the distant future.")]
         public async Task FishInventory([Remainder]IGuildUser user = null)
@@ -672,6 +752,7 @@ namespace Kehyeedra3.Commands
                             message.AppendLine($"**{store.StoreItemType} Store** has no offers currently");
                         }
                     }
+                    await Context.Channel.SendMessageAsync($"{message}");
                 }
             }
         }
@@ -855,6 +936,7 @@ namespace Kehyeedra3.Commands
                 using (var Database = new ApplicationDbContextFactory().CreateDbContext())
                 {
                     var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
+                    var pers = Database.Users.FirstOrDefault(x => x.Id == person.Id);
                     if (user.Money < amount)
                     {
                         await Context.Channel.SendMessageAsync($"{Context.User.Mention} You don't have that much money??");
@@ -867,12 +949,14 @@ namespace Kehyeedra3.Commands
                         }
                         else
                         {
-                            var transfer = amount - (amount * 2);
-                            if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == person.Id), transfer))
+                            if (pers.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), amount) && user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), -amount))
+                            {
+                                await Context.Channel.SendMessageAsync($"{Context.User.Mention} **{amount / 10000d}%** has been transferred from your account.");
+                            }
+                            else
                             {
                                 await Context.Channel.SendMessageAsync($"{Context.User.Mention} You can't afford that, go back to the mines.");
                             }
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention} **{amount / 10000d}%** has been transferred from your account.");
                             await Database.SaveChangesAsync();
                         }
                     }

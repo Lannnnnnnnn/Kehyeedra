@@ -12,7 +12,7 @@
         {
             if(bank.Money > amount)
             {
-                Money += amount % bank.Money;
+                Money += amount;
                 bank.Money -= amount;
                 return true;
             }

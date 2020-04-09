@@ -12,7 +12,9 @@ namespace Kehyeedra3.Services.Models
     }
     public enum FishRarity
     {
-        Common, Uncommon, Rare, Legendary
+        Common, Uncommon, Rare, Legendary, 
+        T2Rare, T2Legendary,
+        T3Rare, T3Legendary
     }
     public class Fish
     {
@@ -30,6 +32,8 @@ namespace Kehyeedra3.Services.Models
         public ulong Xp { get; set; } = 50;
         public ulong TXp { get; set; } = 0;
         public ulong Lvl { get; set; } = 0;
+        public byte RodOwned { get; set; } = 0;
+        public byte RodUsed { get; set; } = 0;
 
         [Column(TypeName="LONGTEXT")]
         public string Inventory { get; set; } = "{}";
@@ -184,22 +188,40 @@ namespace Kehyeedra3.Services.Models
                     Name = "Megacrab",
                     Emote = "<:megacrab:681871426319286302>",
                     Rarity = FishRarity.Common
+                },
+
+                new Fish()
+                {
+                    Id = FishSpecies.T2Circusfish,
+                    Name = "Circusfish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T2Legendary
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T2Swolefish,
+                    Name = "Pumped Up Swolefish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T2Rare
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T3Doomfish,
+                    Name = "Spectral Doomfish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T3Legendary
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T3Crab,
+                    Name = "Revenant Crab",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T3Rare
                 }
+
            };
         }
-
     }
-    //public class FishObject
-    //{
-    //    public FishSpecies Species;
-    //    public FishSize Weight;
-    //    public FishRarity Rarity;
-
-    //    public override string ToString()
-    //    {
-    //        return $"{Weight.ToString()} {Rarity.ToString()} {Species.ToString()}";
-    //    }
-    //}
 
     public enum FishSpecies
     {
@@ -225,7 +247,20 @@ namespace Kehyeedra3.Services.Models
         Crayfish = 16,
         Betta = 17,
         Carp = 18,
-        Megacrab = 19
+        Megacrab = 19,
+        //T2 Legendary
+        T2Circusfish = 20,
+        //T2 Rare
+        T2Swolefish = 21,
+        //T3 Legendary
+        T3Doomfish = 22,
+        //T3 Rare
+        T3Crab = 23,
+        //T4 Legendary
+
+        //T4 Rare
+
+
     }
     public class FishingInventorySlot
     {
