@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Kehyeedra3.Services.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -967,6 +968,25 @@ namespace Kehyeedra3.Commands
                 await Context.Channel.SendMessageAsync($"{Context.User.Mention} That's not how this works??");
             }
 
+        }
+        [Command("stats"),Summary("View a user's stats")]
+        public async Task FishProfile(IUser otherUser = null)
+        {
+            using (var database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                if (otherUser == null)
+                {
+                    var user = database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                    var muser = database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}'s stats\nFishing level: **{user.Lvl}**\nFishing xp: **{user.TXp}**\nBalance: **{muser.Money/10000d}%**");
+                }
+                else
+                {
+                    var user = database.Fishing.FirstOrDefault(x => x.Id == otherUser.Id);
+                    var muser = database.Users.FirstOrDefault(x => x.Id == otherUser.Id);
+                    await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}**\nFishing xp: **{user.TXp}**\nBalance: **{muser.Money/10000d}%**");
+                }
+            }
         }
     }
 }
