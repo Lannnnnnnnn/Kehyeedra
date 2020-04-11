@@ -248,19 +248,27 @@ namespace Kehyeedra3.Commands
 
                 Fish fish;
 
-                if (rarity == 777 || (rarity > 2060 && rarity <= 2070) || (rarity > 2760 && rarity <= 2770))
+                if (rarity == 777 || (rarity > 2060 && rarity <= 2070) || (rarity >= 2765 && rarity <= 2767))
                 {
-                    if (rod == 1)
+                    int tierRoll = SRandom.Next(0, 101);
+
+                    if (rod >= 3 && tierRoll > 60)
                     {
-                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Legendary).ToList();
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Legendary).ToList();
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                        xp = 15;
+                        xp = 25;
                     }
-                    else if (rod == 1)
+                    else if (rod >= 2 && tierRoll > 40)
                     {
                         List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Legendary).ToList();
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                         xp = 20;
+                    }
+                    else if (rod >= 1 && tierRoll > 20)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Legendary).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 15;
                     }
                     else
                     {
@@ -276,27 +284,55 @@ namespace Kehyeedra3.Commands
 
                 else if (rarity > 1700)
                 {
+                    int tierRoll = SRandom.Next(0, 101);
                     rarity = Convert.ToUInt64(SRandom.Next(1750, 2801));
-                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
-                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                    xp = 10;
+                    if (rod >= 3 && tierRoll > 60)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Uncommon).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 20;
+                    }
+                    else if (rod >= 2 && tierRoll > 40)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Uncommon).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 16;
+                    }
+                    else if (rod >= 1 && tierRoll > 20)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Uncommon).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 13;
+                    }
+                    else
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 10;
+                    }
                     if (rarity > 2600)
                     {
-                        if (rod == 1)
+                        if (rod >= 3 && tierRoll > 60)
                         {
-                            possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Rare).ToList();
+                            List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Rare).ToList();
                             fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                            xp = 25;
+                            xp = 35;
                         }
-                        else if (rod == 2)
+                        else if (rod >= 2 && tierRoll > 40)
                         {
-                            possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Rare).ToList();
+                            List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Rare).ToList();
                             fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                             xp = 30;
                         }
+                        else if (rod >= 1 && tierRoll > 20)
+                        {
+                            List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Rare).ToList();
+                            fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                            xp = 25;
+                        }
                         else
                         {
-                            possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
+                            List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
                             fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                             xp = 20;
                         }
@@ -305,14 +341,36 @@ namespace Kehyeedra3.Commands
                 }
                 else
                 {
-                    List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Common).ToList();
-                    fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
-                    xp = 5;
+                    int tierRoll = SRandom.Next(0, 101);
+                    if (rod >= 3 && tierRoll > 60)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Common).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 10;
+                    }
+                    else if (rod >= 2 && tierRoll > 40)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Common).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 8;
+                    }
+                    else if (rod >= 1 && tierRoll >= 20)
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Common).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 6;
+                    }
+                    else
+                    {
+                        List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Common).ToList();
+                        fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
+                        xp = 5;
+                    }
                 }
 
                 FishSize size;
 
-                if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary)
+                if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary )
                 {
                     weight = 1000;
                 }
@@ -325,7 +383,7 @@ namespace Kehyeedra3.Commands
                         weight = SRandom.Next(10, 2001) + Convert.ToInt32(level * 5);
                     }
 
-                    if (fish.Rarity == FishRarity.Legendary)
+                    if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
                     {
                         weight = SRandom.Next(2000 + Convert.ToInt32(level * 20), 40001);
                     }
@@ -333,7 +391,7 @@ namespace Kehyeedra3.Commands
                     if (weight >= 1000)
                     {
                         xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
-                        if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary)
+                        if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
                         {
                             if (xp < 100)
                             {

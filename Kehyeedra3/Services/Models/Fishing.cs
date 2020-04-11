@@ -13,8 +13,9 @@ namespace Kehyeedra3.Services.Models
     public enum FishRarity
     {
         Common, Uncommon, Rare, Legendary, 
-        T2Rare, T2Legendary,
-        T3Rare, T3Legendary
+        T2Rare, T2Legendary, T2Uncommon, T2Common,
+        T3Rare, T3Legendary, T3Uncommon, T3Common,
+        T4Rare, T4Legendary, T4Uncommon, T4Common
     }
     public class Fish
     {
@@ -190,7 +191,7 @@ namespace Kehyeedra3.Services.Models
                     Rarity = FishRarity.Common
                 },
 
-                new Fish()
+                new Fish() //// Tier 2
                 {
                     Id = FishSpecies.T2Circusfish,
                     Name = "Circusfish",
@@ -206,6 +207,21 @@ namespace Kehyeedra3.Services.Models
                 },
                 new Fish()
                 {
+                    Id = FishSpecies.T2Gunfish,
+                    Name = "Gunfish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T2Uncommon
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T2Com,
+                    Name = "Missing T2 Common Fish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T2Common
+                },
+
+                new Fish() //// Tier 3
+                {
                     Id = FishSpecies.T3Doomfish,
                     Name = "Spectral Doomfish",
                     Emote = "<:missingLeg:682586847830081551>",
@@ -217,6 +233,49 @@ namespace Kehyeedra3.Services.Models
                     Name = "Revenant Crab",
                     Emote = "<:missingLeg:682586847830081551>",
                     Rarity = FishRarity.T3Rare
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T3Unc,
+                    Name = "Spectral Flameworm",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T3Uncommon
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T3Com,
+                    Name = "Spectral Shrimp",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T3Common
+                },
+
+                new Fish() //// Tier 4
+                {
+                    Id = FishSpecies.T4Leg,
+                    Name = "Missing T4 Legendary Fish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T4Legendary
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T4Rar,
+                    Name = "Missing T4 Rare Fish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T4Rare
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T4Unc,
+                    Name = "Missing T4 Uncommon Fish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T4Uncommon
+                },
+                new Fish()
+                {
+                    Id = FishSpecies.T4Com,
+                    Name = "Missing T4 Common Fish",
+                    Emote = "<:missingLeg:682586847830081551>",
+                    Rarity = FishRarity.T4Common
                 }
 
            };
@@ -252,15 +311,26 @@ namespace Kehyeedra3.Services.Models
         T2Circusfish = 20,
         //T2 Rare
         T2Swolefish = 21,
+        //T2 Uncommon
+        T2Gunfish = 22,
+        //T2 Common
+        T2Com = 23,
         //T3 Legendary
-        T3Doomfish = 22,
+        T3Doomfish = 24,
         //T3 Rare
-        T3Crab = 23,
+        T3Crab = 25,
+        //T3 Uncommon
+        T3Unc = 26,
+        //T3 Common
+        T3Com = 27,
         //T4 Legendary
-
+        T4Leg = 28,
         //T4 Rare
-
-
+        T4Rar = 29,
+        //T4 Uncommon
+        T4Unc = 30,
+        //T4 Common
+        T4Com = 31
     }
     public class FishingInventorySlot
     {

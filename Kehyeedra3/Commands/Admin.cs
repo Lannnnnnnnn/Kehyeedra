@@ -102,11 +102,11 @@ namespace Kehyeedra3.Commands
                     await Database.SaveChangesAsync();
                     if (difference > 0)
                     {
-                        await Context.Channel.SendMessageAsync($"Economy has been stabilized by adding {difference / 10000d} to bank");
+                        await Context.Channel.SendMessageAsync($"Economy has been stabilized by adding {difference / 10000d}% to bank");
                     }
                     else
                     {
-                        await Context.Channel.SendMessageAsync($"Economy has been stabilized by removing {0-difference / 10000d} from bank");
+                        await Context.Channel.SendMessageAsync($"Economy has been stabilized by removing {0-difference / 10000d}% from bank");
                     }
                 }
             }
