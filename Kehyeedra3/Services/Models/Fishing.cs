@@ -144,7 +144,7 @@ namespace Kehyeedra3.Services.Models
                 {
                     Id = FishSpecies.Salmon,
                     Name = "Salmon",
-                    Emote = "<:missingCom:682586847079432217>[Salmon]",
+                    Emote = "<:salmonleft:698167269359878236><:salmonright:698167269167202324>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
@@ -158,28 +158,28 @@ namespace Kehyeedra3.Services.Models
                 {
                     Id = FishSpecies.Crayfish,
                     Name = "Crayfish",
-                    Emote =  "<:missingCom:682586847079432217>[Crayfish]",
+                    Emote =  "<:crayfishleft:698157988195598466><:crayfishright:698157988170432602>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
                 {
                     Id = FishSpecies.Betta,
                     Name = "Betta",
-                    Emote = "<:missingCom:682586847079432217>[Betta]",
+                    Emote = "<:bettaleft:698179217107714088><:bettaright:698179216868638851>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
                 {
                     Id = FishSpecies.Pufferfish,
                     Name = "Pufferfish",
-                    Emote = "<:missingCom:682586847079432217>[Pufferfish]",
+                    Emote = "<:pufferfish:698203043350708225>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
                 {
                     Id = FishSpecies.Carp,
                     Name = "Carp",
-                    Emote = "<:koicarpleft:695318059925373029><:koicarpright:695318060051202118>",
+                    Emote = "<:koicarpleft:698204388556275752><:koicarpright:698204386421374986>",
                     Rarity = FishRarity.Common
                 },
                 new Fish()
