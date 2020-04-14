@@ -236,7 +236,7 @@ namespace Kehyeedra3.Services.Models
                 },
                 new Fish()
                 {
-                    Id = FishSpecies.T3Unc,
+                    Id = FishSpecies.T3Flameworm,
                     Name = "Spectral Flameworm",
                     Emote = "<:missingLeg:682586847830081551>",
                     Rarity = FishRarity.T3Uncommon
@@ -320,7 +320,7 @@ namespace Kehyeedra3.Services.Models
         //T3 Rare
         T3Crab = 25,
         //T3 Uncommon
-        T3Unc = 26,
+        T3Flameworm = 26,
         //T3 Common
         T3Com = 27,
         //T4 Legendary

@@ -108,41 +108,60 @@ namespace Kehyeedra3.Commands
             DateTime dt = DateTime.UtcNow;
 
             string time = dt.ToString("dd/MM/yyyy HH:mm");
-
+            string remin = "";
+            ulong sen = (d * 86400) + (h * 3600) + (m * 60);
             ulong yeedraStamp = DateTime.UtcNow.ToYeedraStamp();
 
-            var reminder = new Reminder
+            while (m > 60)
             {
-                UserId = Context.User.Id,
-                Message = ($"At **UTC {time}** you wanted me to remind you:\n**'{r}'**"),
-                Created = yeedraStamp,
-                Send = ((d * 86400) + (h * 3600) + (m * 60)) + yeedraStamp
-            };
-
-            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
-            {
-                Database.Reminders.Add(reminder);
-
-                await Database.SaveChangesAsync().ConfigureAwait(false);
+                h += 1;
+                m -= 60;
             }
-            await Context.Channel.SendMessageAsync($"{Context.User.Mention} Ok, I'll remind you in {d}d {h}h {m}m");
-        }
-        [Command("grant"), Summary("Bambi Sit janksie")]
-        public async Task Daycare(IGuildUser ouser)
-        {
-            var user = Context.Guild.GetUser(Context.User.Id);
-            var drole = Context.Guild.GetRole(682109241363922965);
-            if (user.Roles.Any(x => x.Id == 682109241363922965))
+            while (h > 24)
             {
-                await user.RemoveRoleAsync(drole);
-                await ouser.AddRoleAsync(drole);
-                await Context.Channel.SendMessageAsync($"*{ouser.Mention} the power of daycare rests in the palm of your hands*");
+                d += 1;
+                h -= 24;
+            }
+
+            if (sen < 63072000)
+            {
+                var reminder = new Reminder
+                {
+                    UserId = Context.User.Id,
+                    Message = ($"At **UTC {time}** you wanted me to remind you:\n**'{r}'**"),
+                    Created = yeedraStamp,
+                    Send = sen + yeedraStamp
+                };
+
+                using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+                {
+                    Database.Reminders.Add(reminder);
+
+                    await Database.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"HNNNNG you do not possess this power HNNNGGGG");
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention} Are you sure you need a reminder 2 years in the future..? \nAre you stupid?");
+                return;
             }
+
+
+            if (d > 0)
+            {
+                remin += $"{d} days ";
+            }
+            if (h > 0)
+            {
+                remin += $"{h} hours ";
+            }
+            if (m > 0)
+            {
+                remin += $"{m} minutes ";
+            }
+            await Context.Channel.SendMessageAsync($"{Context.User.Mention} Ok, I'll remind you in {remin}");
         }
+
         [Command("dab"), Summary("Dabs a person")]
         public async Task Dab(IGuildUser user = null)
         {

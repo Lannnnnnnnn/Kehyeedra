@@ -115,40 +115,185 @@ namespace Kehyeedra3.Commands
                 await Context.Channel.SendMessageAsync($"{content}");
             }
         }
-        /*
-        [RequireRolePrecondition(AccessLevel.BotOwner)]
-        [Command("getstamp")]
-        public async Task YeedraStamp()
-        {
-            ulong stamp = DateTime.UtcNow.ToYeedraStamp();
-            await ReplyAsync($"{Context.User.Mention} {stamp}");
-        }
-        [RequireRolePrecondition(AccessLevel.BotOwner)]
-        [Command("savefile")]
+        // test commands
+        //[RequireRolePrecondition(AccessLevel.BotOwner)]
+        //[Command("cbt", RunMode = RunMode.Async)]
+        //public async Task CombatTest()
+        //{
+        //    string[] attackse = new string[]
+        //    {
+        //        "a bite",
+        //        "a crowbar",
+        //        "invasive odor",
+        //        "an intense slap"
+        //    };
 
-        public async Task SaveFile(string fday, string fscore)
-        {
-            string location = Path.Combine(Environment.CurrentDirectory, "drawtasks");
-            string tlocation = ($"{location}/days.txt");
-            var attachments = Context.Message.Attachments;
-            string fname = $"{fday}-{fscore}";
-            if (File.Exists(location + "/days.txt"))
-                {
+        //    int hp = 100;
+        //    int atk = 100;
+        //    int bhp = 1000;
+        //    int dmg = 0;
+        //    int edg = 0;
+        //    string cbta = "";
+        //    int numatt = SRandom.Next(attackse.Length);
+        //    string at1;
+        //    string at2;
+        //    string eattack;
+        //    int cb;
+        //    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBattle against **Fishthot**\nChoose your battle fish:\n**Pistol Shrimp | Coomfish**");
+        //    var message = await NextMessageAsync();
+        //    if (message.Content.ToLowerInvariant() == "pistol shrimp")
+        //    {
+        //        cbta = "Pistol Shrimp";
+        //        at1 = "Firearm";
+        //        at2 = "Crowbar";
+        //        cb = 1;
+        //        hp = 80;
+        //        atk = 20;
+        //    }
+        //    else if (message.Content.ToLowerInvariant() == "coomfish")
+        //    {
+        //        cbta = "Coomfish";
+        //        at1 = "Eruption";
+        //        at2 = "Smack";
+        //        cb = 2;
+        //        hp = 160;
+        //        atk = 10;
+        //    }
+        //    else
+        //    {
+        //        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid battle fish??? are you RETARDeDED??");
+        //        return;
+        //    }
+        //    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou have chosen: **{cbta}**, your stats are HP: **{hp}** ATK: **{atk}**\n\nBegin battle?");
+        //    message = await NextMessageAsync();
+        //    if (message.Content.ToLowerInvariant() == "yes")
+        //    {
+        //        string ment = $"{Context.User.Mention}\n";
+        //        while (bhp > 0 && hp > 0)
+        //        {
+        //            if (bhp > 0 && hp > 0)
+        //            {
+        //                edg = SRandom.Next(3, 16);
+        //                dmg = SRandom.Next(atk, atk * 20);
+        //                eattack = attackse[numatt];
+        //                hp -= edg;
+        //                await Context.Channel.SendMessageAsync($"{ment}**Fishthot** attacks with {eattack}, dealing **{edg}** damage.\n**{cbta}**'s **HP** drops to {hp}.");
+        //                ment = "";
+        //                if (hp <= 0)
+        //                {
+        //                    await Context.Channel.SendMessageAsync($"Oh dear! **{cbta}** has fallen in battle.\nChoose your last ditch effort.\n**Belt** | **Punch**");
+        //                    message = await NextMessageAsync();
+        //                    if (message.Content.ToLowerInvariant() == "belt")
+        //                    {
+        //                        dmg = SRandom.Next(20, 100);
+        //                        bhp -= dmg;
+        //                    }
+        //                    else if (message.Content.ToLowerInvariant() == "punch")
+        //                    {
+        //                        dmg = SRandom.Next(40, 80);
+        //                        bhp -= dmg;
+        //                    }
+        //                    await Context.Channel.SendMessageAsync($"Your last ditch effort dealt **{dmg}** damage, reducing **Fishthot**'s health to {bhp}.");
+        //                }
+        //                else
+        //                {
+        //                    bhp -= dmg;
+        //                    await Context.Channel.SendMessageAsync($"What will you attack with?\n**{at1}** | **{at2}**");
+        //                    message = await NextMessageAsync();
+        //                    if (cb == 1 && message.Content.ToLowerInvariant() == "firearm")
+        //                    {
+        //                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{cbta}** pulls out his trusty glock and shoots at **Fishthot**, dealing **{dmg}** damage.\n**Fishthot**'s HP has been reduced to **{bhp}**.");
+        //                    }
+        //                    else if (cb == 1 && message.Content.ToLowerInvariant() == "crowbar")
+        //                    {
+        //                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{cbta}** unsheathes a menacing looking crowbar and lands a nice smack on **Fishthot**, dealing **{dmg}** damage.\n**Fishthot**'s HP has been reduced to **{bhp}**.");
+        //                    }
+        //                    else if (cb == 2 && message.Content.ToLowerInvariant() == "eruption")
+        //                    {
+        //                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{cbta}** releases a massive ***CUM ERUPTION*** on **Fishthot**, dealing **{dmg}** damage.\n**Fishthot**'s HP has been reduced to **{bhp}**.");
+        //                    }
+        //                    else if (cb == 2 && message.Content.ToLowerInvariant() == "smack")
+        //                    {
+        //                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{cbta}** feeds **Fishthot** a nice knuckle sandwich with his **Power Arm**, dealing **{dmg}** damage.\n**Fishthot**'s HP has been reduced to **{bhp}**.");
+        //                    }
+        //                    else
+        //                    {
+        //                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{cbta}** did not understand your command.\n**{cbta}** is looking at you with disappointed eyes.\nYour turn is skipped, good job retard.");
+        //                    }
+        //                }
+
+        //            }
+        //            else
+        //            {
+        //                if (bhp <= 0 && hp > 0)
+        //                {
+        //                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**You win!** Go buy **{cbta}** a beer or something for his great accomplishments.");
+        //                    break;
+        //                }
+        //                else if (bhp <= 0 && hp < 0)
+        //                {
+        //                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{cbta}** is gone. But so is **Fishthot**. Make sure to boil him in a good broth, he would have deserved it.");
+        //                    break;
+        //                }
+        //                else if (hp <= 0)
+        //                {
+        //                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{cbta}** is gone. Now nothing stands between **Fishthot** and your frail frame.");
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSomething went ***REALLY*** wrong");
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nyou afraid or something? loser lmao");
+        //        return;
+        //    }
+        //}
+
+
+
+
+        
+        //[RequireRolePrecondition(AccessLevel.BotOwner)]
+        //[Command("getstamp")]
+        //public async Task YeedraStamp()
+        //{
+        //    ulong stamp = DateTime.UtcNow.ToYeedraStamp();
+        //    await ReplyAsync($"{Context.User.Mention} {stamp}");
+        //}
+        //[RequireRolePrecondition(AccessLevel.BotOwner)]
+        //[Command("savefile")]
+
+        //public async Task SaveFile(string fday, string fscore)
+        //{
+        //    string location = Path.Combine(Environment.CurrentDirectory, "drawtasks");
+        //    string tlocation = ($"{location}/days.txt");
+        //    var attachments = Context.Message.Attachments;
+        //    string fname = $"{fday}-{fscore}";
+        //    if (File.Exists(location + "/days.txt"))
+        //        {
                 
-                }
-            foreach (var item in attachments)
-            {
-                Uri link = new Uri(item.Url);
-                using (WebClient _webclient = new WebClient())
-                {
-                    if (!Directory.Exists(location))
-                        Directory.CreateDirectory(location);
-                    location += ($"/{fday}-{fscore}.jpg");
-                    _webclient.DownloadFileAsync(link, location);
-                }
-                await ReplyAsync($"Post archived");
-                break;
-            }
-        }*/
+        //        }
+        //    foreach (var item in attachments)
+        //    {
+        //        Uri link = new Uri(item.Url);
+        //        using (WebClient _webclient = new WebClient())
+        //        {
+        //            if (!Directory.Exists(location))
+        //                Directory.CreateDirectory(location);
+        //            location += ($"/{fday}-{fscore}.jpg");
+        //            _webclient.DownloadFileAsync(link, location);
+        //        }
+        //        await ReplyAsync($"Post archived");
+        //        break;
+        //    }
+        //}
+
+
     }
 }

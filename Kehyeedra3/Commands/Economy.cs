@@ -443,21 +443,33 @@ namespace Kehyeedra3.Commands
                         user.TXp += xp;
 
                         toNextLvl = user.Xp - user.TXp;
+                        int times = 0;
                         if (user.TXp >= user.Xp)
                         {
-                            user.Lvl += 1;
-                            lvlXp = 50;
-                            for (ulong i = 0; i < user.Lvl; i++)
+                            while (user.TXp >= user.Xp)
                             {
-                                if (i <= user.Lvl)
+                                user.Lvl += 1;
+                                times += 1;
+                                lvlXp = 50;
+                                for (ulong i = 0; i < user.Lvl; i++)
                                 {
-                                    lvlXp += Convert.ToUInt64(Math.Round((lvlXp * 0.05d + 50d), 0, MidpointRounding.ToEven));
+                                    if (i <= user.Lvl)
+                                    {
+                                        lvlXp += Convert.ToUInt64(Math.Round((lvlXp * 0.05d + 50d), 0, MidpointRounding.ToEven));
+                                    }
                                 }
+                                user.Xp = lvlXp;
                             }
-                            user.Xp = lvlXp;
                             toNextLvl = user.Xp - user.TXp;
                             level = user.Lvl;
-                            lvlUp = $"**You leveled up!** You are now **Level {level}**";
+                            if (times > 1)
+                            {
+                                lvlUp = $"**You leveled up {times} times!** You are now **Level {level}.**";
+                            }
+                            else
+                            {
+                                lvlUp = $"**You leveled up!** You are now **Level {level}**";
+                            }
                         }
                         else
                         {
@@ -510,6 +522,10 @@ namespace Kehyeedra3.Commands
                     else if (tier == 3)
                     {
                         rodtype = "Spectral";
+                    }
+                    else if (tier == 4)
+                    {
+                        rodtype = "Cosmic";
                     }
                     else
                     {
