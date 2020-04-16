@@ -976,31 +976,61 @@ namespace Kehyeedra3.Commands
                 }
             }
         }
-        [Command("leaderboard"), Alias("top", "lb"), Summary("Shows the top 10 people in regards to % money as well as how much of the money in circulation they own")]
-        public async Task Leaderboard()
+        [Command("leaderboard"), Alias("top", "lb"), Summary("Shows the top 10 people in a leaderboard, currently available leaderboards: 'f, fish', 'm, money'.")]
+        public async Task Leaderboard(string type = null)
         {
-            List<User> users;
-            User bank;
-            User skuld;
-
-            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            if (type == null)
             {
-                users = Database.Users.OrderByDescending(user => user.Money).ToList();
-                bank = Database.Users.FirstOrDefault(x => x.Id == 0);
-                skuld = Database.Users.FirstOrDefault(x => x.Id == 1);
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nPlease specify the leaderboard you want to view (fish or f for fish, m or money for money)");
             }
-            users.Remove(bank);
-            users.Remove(skuld);
-
-            string leaderboardMessage = "**Top Ten Most Jewish Miners**:";
-            for (int i = 0; i < 10; i++)
+            else if (type == "m" || type == "money")
             {
-                string percent = $"{ users[i].Money / 10000d }";
-                string percentCirculating = $"{Math.Round(((users[i].Money * 100d) / (1000000d - bank.Money - skuld.Money)), 2, MidpointRounding.ToEven)}";
-                leaderboardMessage += $"\n**{users[i].Username}** : {percent}% ~ *{percentCirculating}% circulating*";
-            }
+                List<User> users;
+                User bank;
+                User skuld;
+                using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+                {
+                    users = Database.Users.OrderByDescending(user => user.Money).ToList();
+                    bank = Database.Users.FirstOrDefault(x => x.Id == 0);
+                    skuld = Database.Users.FirstOrDefault(x => x.Id == 1);
+                }
+                users.Remove(bank);
+                users.Remove(skuld);
 
-            await Context.Channel.SendMessageAsync(leaderboardMessage);
+                int placing = 0;
+                string leaderboardMessage = "**Top Ten Most Jewish Users**:";
+                for (int i = 0; i < 10; i++)
+                {
+                    placing += 1;
+                    string percent = $"{ users[i].Money / 10000d }";
+                    string percentCirculating = $"{Math.Round(((users[i].Money * 100d) / (1000000d - bank.Money - skuld.Money)), 2, MidpointRounding.ToEven)}";
+                    leaderboardMessage += $"\n**#{placing} : {users[i].Username}**\n{percent}% ~ *{percentCirculating}% circulating*";
+                }
+                await Context.Channel.SendMessageAsync(leaderboardMessage);
+            }
+            else if (type == "f" || type == "fish")
+            {
+                List<Fishing> users;
+                using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+                {
+                    users = Database.Fishing.OrderByDescending(user => user.TXp).ToList();
+                    string leaderboardMessage = "**Top Ten Smelliest Fishermen**:";
+                    int placing = 0;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        placing += 1;
+                        var user = Database.Users.FirstOrDefault(x => x.Id == users[i].Id);
+                        string xp = $"{users[i].TXp}";
+                        string level = $"{users[i].Lvl}";
+                        leaderboardMessage += $"\n**#{placing} : {user.Username}** Lvl : **{level}**\n*{xp}xp*";
+                    }
+                    await Context.Channel.SendMessageAsync(leaderboardMessage);
+                }
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nCan't find the leaderboard you were looking for. \nPlease type fish or f for fish leaderboard, m or money for money leaderboard.");
+            }
 
         }
         [Command("give"), Summary("Give a user money. Eg. 'give @user [amount]'")]
@@ -1062,5 +1092,6 @@ namespace Kehyeedra3.Commands
                 }
             }
         }
+
     }
 }

@@ -112,12 +112,12 @@ namespace Kehyeedra3.Commands
             ulong sen = (d * 86400) + (h * 3600) + (m * 60);
             ulong yeedraStamp = DateTime.UtcNow.ToYeedraStamp();
 
-            while (m > 60)
+            while (m > 59)
             {
                 h += 1;
                 m -= 60;
             }
-            while (h > 24)
+            while (h > 23)
             {
                 d += 1;
                 h -= 24;
