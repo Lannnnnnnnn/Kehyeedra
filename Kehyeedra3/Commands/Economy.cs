@@ -1074,7 +1074,7 @@ namespace Kehyeedra3.Commands
 
         }
         [Command("stats"),Summary("View a user's stats")]
-        public async Task FishProfile(IUser otherUser = null)
+        public async Task StatProfile(IUser otherUser = null)
         {
             using (var database = new ApplicationDbContextFactory().CreateDbContext())
             {

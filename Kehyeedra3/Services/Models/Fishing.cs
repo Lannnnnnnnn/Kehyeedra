@@ -117,14 +117,14 @@ namespace Kehyeedra3.Services.Models
                 {
                     Id = FishSpecies.Stargazer,
                     Name = "Stargazer",
-                    Emote = "<:missingUnc:682586846857003064>[Stargazer]",
+                    Emote = "<:stargazerleft:700414644774240286><:stargazerright:700413063442202684>",
                     Rarity = FishRarity.Uncommon
                 },
                 new Fish()
                 {
                     Id = FishSpecies.Isopod,
                     Name = "Isopod",
-                    Emote = "<:missingUnc:682586846857003064>[Isopod]",
+                    Emote = "<:isopodleft:700397032271249428><:isopodright:700397031922991206>",
                     Rarity = FishRarity.Uncommon
                 },
                 new Fish()

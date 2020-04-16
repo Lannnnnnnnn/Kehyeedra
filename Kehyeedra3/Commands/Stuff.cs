@@ -37,37 +37,41 @@ namespace Kehyeedra3.Commands
         }
 
         [Command("ratetrap"), Summary("Rates your or another person's trap potential as a percentage")]
-        public async Task RateTrap()
+        public async Task RateTrap( string name = null)
         {
-            Random rando = new Random();
-            Random rando1 = new Random();
-            int trapRating0 = rando.Next(0, 101);
-            if (trapRating0 == 100)
+            if (name == null)
             {
-                int trapRating1 = rando1.Next(0, 1001);
-                await Context.Channel.SendMessageAsync($"I'd say right now you're {trapRating1}% passable");
+                Random rando = new Random();
+                Random rando1 = new Random();
+                int trapRating0 = rando.Next(0, 101);
+                if (trapRating0 == 100)
+                {
+                    int trapRating1 = rando1.Next(0, 1001);
+                    await Context.Channel.SendMessageAsync($"I'd say right now you're {trapRating1}% passable");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"I'd say right now you're {trapRating0}% passable");
+                }
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"I'd say right now you're {trapRating0}% passable");
+                Random rando = new Random();
+                Random rando1 = new Random();
+                int trapRating0 = rando.Next(0, 101);
+                if (trapRating0 == 100)
+                {
+                    int trapRating1 = rando1.Next(0, 1001);
+                    await Context.Channel.SendMessageAsync($"I'd say right now {name} is {trapRating1}% passable");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"I'd say right now {name} is {trapRating0}% passable");
+                }
             }
+
         }
-        [Command("ratetrap"), Summary("Rates your or another person's trap potential as a percentage")]
-        public async Task RateOtherTrap([Remainder] string name)
-        {
-            Random rando = new Random();
-            Random rando1 = new Random();
-            int trapRating0 = rando.Next(0, 101);
-            if (trapRating0 == 100)
-            {
-                int trapRating1 = rando1.Next(0, 1001);
-                await Context.Channel.SendMessageAsync($"I'd say right now {name} is {trapRating1}% passable");
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync($"I'd say right now {name} is {trapRating0}% passable");
-            }
-        }
+
         [Command("ratertrap"), Summary("ratertrap")]
         public async Task RaterTrap()
         {
