@@ -110,7 +110,7 @@ namespace Kehyeedra3.Services.Models
                 {
                     Id = FishSpecies.Dopefish,
                     Name = "Dopefish",
-                    Emote = "<:missingUnc:682586846857003064>[Dopefish]",
+                    Emote = "<:dopefishleft:700422139672658009><:dopefishright:700422139643428895>",
                     Rarity = FishRarity.Uncommon
                 },
                 new Fish()
