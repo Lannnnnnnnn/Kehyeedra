@@ -81,6 +81,8 @@ namespace Kehyeedra3
         {
             if (!arg.Author.IsBot)
             {
+                var message = arg as SocketUserMessage;
+                var Context = new SocketCommandContext(_bot, message);
                 using (var Database = new ApplicationDbContextFactory().CreateDbContext())
                 {
                     if(!Database.Users.Any(x=>x.Id == arg.Author.Id))
@@ -93,42 +95,31 @@ namespace Kehyeedra3
                         });
                         await Database.SaveChangesAsync();
                     }
+                    else
+                    {
+                        var user = Database.Users.FirstOrDefault(x => x.Id == arg.Author.Id);
+                        user.Username = arg.Author.Username;
+                        user.Avatar = arg.Author.GetAvatarUrl() ?? arg.Author.GetDefaultAvatarUrl();
+                        await Database.SaveChangesAsync();
+                    }
                 }
 
-                var message = arg as SocketUserMessage;
                 if (message == null) return;
                 int argPos = 0;
-                var context = new SocketCommandContext(_bot, message);
+                
                 if (message.HasMentionPrefix(_bot.CurrentUser, ref argPos))
                 {
-                    await KizunaAi(context, message.Content);
+                    await KizunaAi(Context, message.Content);
                 }
                 if (message.Content.Contains("\uD83C\uDD71")) //B emoji detector
                 {
-                    await context.Channel.SendMessageAsync($"B emoji detected. Proceed to kill yourself, {context.User.Mention}");
+                    await Context.Channel.SendMessageAsync($"B emoji detected. Proceed to kill yourself, {Context.User.Mention}");
                 }
-                var jrole = context.Guild.GetRole(375289794999091201);
-                var euser = context.Guild.GetUser(context.User.Id);
-                //var jas = await context.Guild.GetUserAsync(236952555265982464).ConfigureAwait(false);
-                //var cat = await context.Guild.GetUserAsync(194439970797256706).ConfigureAwait(false);
-                //if (euser.RoleIds.Any(id => id == 682109241363922965))
-                //{
-                //    if (message.Content.ToLowerInvariant().Contains("thot begone"))
-                //    {
-                //        await jas.AddRoleAsync(jrole);
-                //        await cat.AddRoleAsync(jrole);
-                //    }
-                //    if (message.Content.ToLowerInvariant().Contains("thot return"))
-                //    {
-                //        await jas.RemoveRoleAsync(jrole);
-                //        await cat.RemoveRoleAsync(jrole);
-                //    }
-                //}
 
                 if (message.Content.ToLowerInvariant().Contains("jojo"))
                 {
                     var jojoke = WeebClient.DownloadString("https://api.skuldbot.uk/fun/jojoke/?raw");
-                    await context.Channel.SendMessageAsync($"{context.User.Mention} is that a fucksnifflerling {jojoke} reference?");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} is that a fucksnifflerling {jojoke} reference?");
                 }
                 
                 if (message.Channel is IGuildChannel chan)
@@ -156,8 +147,7 @@ namespace Kehyeedra3
 
                 if (!(message.HasStringPrefix(Configuration.Load().Prefix, ref argPos))) return;
                 {
-                    var result = await _cmds.ExecuteAsync(context, argPos, _dmap);
-
+                    var result = await _cmds.ExecuteAsync(Context, argPos, _dmap);
                     if (result.IsSuccess)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
@@ -167,7 +157,7 @@ namespace Kehyeedra3
 
                     else
                     {
-                        await context.Channel.SendMessageAsync($"Command failed with the following error:\n{result.ErrorReason}\nPlease make sure your brain is plugged in and charging.");
+                        await Context.Channel.SendMessageAsync($"Command failed with the following error:\n{result.ErrorReason}\nPlease make sure your brain is plugged in and charging.");
                         Console.ForegroundColor = ConsoleColor.Red; //set text red
                         Console.WriteLine($"Something went wrong\n{result.ErrorReason}");
                         Console.ForegroundColor = ConsoleColor.White; //back to white

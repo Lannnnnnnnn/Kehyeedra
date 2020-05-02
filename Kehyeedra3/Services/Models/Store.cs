@@ -18,7 +18,8 @@ namespace Kehyeedra3.Services.Models
     public enum StoreItemType
     {
         Fish = 0,
-        Reminders = 1
+        Items = 1,
+        Reminders = 2
     }
 
     public class StoreInventory

@@ -3,19 +3,50 @@ using System;
 using Kehyeedra3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kehyeedra3.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200428191620_Bootlefish")]
+    partial class Bootlefish
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("Kehyeedra3.Services.Models.BattleFish", b =>
+                {
+                    b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<byte>("Equipment")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.Property<byte>("FishType")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.Property<int>("Lvl")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<ulong>("NextXp")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<ulong>("Xp")
+                        .HasColumnType("bigint unsigned");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BattleFish");
+                });
 
             modelBuilder.Entity("Kehyeedra3.Services.Models.Fishing", b =>
                 {
@@ -177,37 +208,6 @@ namespace Kehyeedra3.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Kehyeedra3.Services.Models.User+BattleFishObject", b =>
-                {
-                    b.Property<ulong>("FishId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<byte>("FishType")
-                        .HasColumnType("tinyint unsigned");
-
-                    b.Property<int>("Lvl")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<ulong>("NextXp")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<ulong?>("UserId")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<ulong>("Xp")
-                        .HasColumnType("bigint unsigned");
-
-                    b.HasKey("FishId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("BattleFishObject");
-                });
-
             modelBuilder.Entity("Kehyeedra3.Services.Models.ItemOffer", b =>
                 {
                     b.HasOne("Kehyeedra3.Services.Models.StoreFront", null)
@@ -220,13 +220,6 @@ namespace Kehyeedra3.Migrations
                     b.HasOne("Kehyeedra3.Services.Models.StoreFront", null)
                         .WithMany("Items")
                         .HasForeignKey("StoreFrontId");
-                });
-
-            modelBuilder.Entity("Kehyeedra3.Services.Models.User+BattleFishObject", b =>
-                {
-                    b.HasOne("Kehyeedra3.Services.Models.User", null)
-                        .WithMany("BattleFish")
-                        .HasForeignKey("UserId");
                 });
 #pragma warning restore 612, 618
         }

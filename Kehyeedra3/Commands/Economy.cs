@@ -178,7 +178,8 @@ namespace Kehyeedra3.Commands
 
                         if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), end))
                         {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention} Bank has no money, convince someone to gamble");
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble.");
+                            return;
                         }
 
                         await Database.SaveChangesAsync();
@@ -444,8 +445,24 @@ namespace Kehyeedra3.Commands
 
                         toNextLvl = user.Xp - user.TXp;
                         int times = 0;
+                        
                         if (user.TXp >= user.Xp)
                         {
+                            ulong leXp = 50;
+                            bool leTrig = false;
+                            for (ulong i = 0; i < user.Lvl; i++)
+                            {
+                                if (i <= user.Lvl)
+                                {
+                                    leXp += Convert.ToUInt64(Math.Round((leXp * 0.05d + 50d), 0, MidpointRounding.ToEven));
+                                }
+                            }
+                            if (leXp != user.Xp)
+                            {
+                                user.Lvl = 0;
+                                user.Xp = 0;
+                                leTrig = true;
+                            }
                             while (user.TXp >= user.Xp)
                             {
                                 user.Lvl += 1;
@@ -462,7 +479,11 @@ namespace Kehyeedra3.Commands
                             }
                             toNextLvl = user.Xp - user.TXp;
                             level = user.Lvl;
-                            if (times > 1)
+                            if (leTrig)
+                            {
+                                lvlUp = $"**Your level was recalculated to match your xp.** You are now **Level {level}**";
+                            }
+                            else if (times > 1)
                             {
                                 lvlUp = $"**You leveled up {times} times!** You are now **Level {level}.**";
                             }
@@ -498,7 +519,12 @@ namespace Kehyeedra3.Commands
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
-                await Context.Channel.SendMessageAsync($"You have unlocked fishing rods up to **T{user.RodOwned+1}**\nYou have currently equipped a **T{user.RodUsed+1}** rod");
+                if (user == null)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't own any fishing rods. Try **fishing**.");
+                    return;
+                }
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou have unlocked fishing rods up to **T{user.RodOwned+1}**\nYou have currently equipped a **T{user.RodUsed+1}** rod");
             }
         }
         [Command("setrod"),Summary("Set your fishing rod to the desired tier (for example: 'setrod 1' to set to default rod)")]
@@ -507,6 +533,11 @@ namespace Kehyeedra3.Commands
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                if (user == null)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't own any fishing rods. Try **fishing**.");
+                    return;
+                }
                 if (tier - 1 <= user.RodOwned)
                 {
                     user.RodUsed = Convert.ToByte(tier - 1);
@@ -568,7 +599,6 @@ namespace Kehyeedra3.Commands
 
                 await Database.SaveChangesAsync().ConfigureAwait(false);
             }
-
             if (inv.Any())
             {
                 Dictionary<FishSpecies, int> small = new Dictionary<FishSpecies, int>();
@@ -899,79 +929,52 @@ namespace Kehyeedra3.Commands
         [Command("bet"), Summary("Gamble %coins in units of 0.0001%")]
         public async Task Gamble(int wager)
         {
-            Random ran = new Random(SRandom.Next(0, 100000000) + int.Parse(Context.User.AvatarId + Context.User.Discriminator));
-            int res1 = ran.Next(0, 11);
-            if (res1 >= 5)
-            {
-                res1 = ran.Next(50, 101);
-            }
-            else
-            {
-                res1 = ran.Next(0, 50);
-            }
-            if (wager < 0)
-            {
-                wager = 0;
-            }
+            int res1 = SRandom.Next(0, 101);
+            int res2 = SRandom.Next(0, 101);
             int loss = wager;
-            if (res1 == 100)
+
+            if (res1 > res2)
             {
-                wager = wager * 4;
+                wager += wager;
             }
-            else if (res1 >= 95)
+            else if (res1 < res2)
             {
-                wager = wager * 3;
+                loss += wager;
             }
-            else if (res1 == 77)
-            {
-                wager = wager * 7;
-            }
-            else if (res1 < 50)
-            {
-                wager = 0;
-            }
-            else
-            {
-                wager = wager * 2;
-            }
+
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
                 var buser = Database.Users.FirstOrDefault(x => x.Id == 0);
                 if (user.Money < loss)
                 {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} You can't afford that, go back to the mines.");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n You can't afford that, go back to the mines.");
                 }
                 else
                 {
                     if (buser.Money > 100)
                     {
-                        if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), (wager) - loss))
+                        if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), wager - loss))
                         {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention} Bank has no money, gamble more and lose please.");
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, gamble more and lose please.");
+                            return;
                         }
                         await Database.SaveChangesAsync();
-
-                        EmbedBuilder embed = new EmbedBuilder();
-                        if (res1 == 77)
+                        string result = "";
+                        if ((wager - loss) > 0)
                         {
-                            embed.AddField($"**Rolled: Lucky cat!**", $"Result: +{((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
-                            await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
+                            result = $"Rolled: **{res1}** against **{res2}**\nResult: +{(wager - loss) / 10000d}%\nBalance: {user.Money / 10000d}%";
+                            await ReplyAsync($"{Context.User.Mention}\n{result}");
                         }
-                        else if (((wager) - loss) > 0)
+                        if ((wager - loss) < 0)
                         {
-                            embed.AddField($"**Rolled: {res1}**", $"Result: +{((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
-                            await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
-                        }
-                        if (((wager) - loss) < 0)
-                        {
-                            embed.AddField($"**Rolled: {res1}**", $"Result: {((wager) - loss) / 10000d}%\nBalance: {(user.Money) / 10000d}%");
-                            await ReplyAsync($"{Context.User.Mention}", false, embed.Build());
+                            result = $"Rolled: **{res1}** against **{res2}**\nResult: {(wager - loss) / 10000d}%\nBalance: {user.Money / 10000d}%";
+                            await ReplyAsync($"{Context.User.Mention}\n{result}");
                         }
                     }
                     else
                     {
-                        await ReplyAsync($"Hey, stop that.");
+                        await ReplyAsync($"{Context.User.Mention}\nHey, stop that.");
                     }
                 }
             }
@@ -1076,22 +1079,154 @@ namespace Kehyeedra3.Commands
         [Command("stats"),Summary("View a user's stats")]
         public async Task StatProfile(IUser otherUser = null)
         {
+            Dictionary<FishSpecies, int[]> inv = new Dictionary<FishSpecies, int[]>();
+            Dictionary<FishSpecies, int> small = new Dictionary<FishSpecies, int>();
+            Dictionary<FishSpecies, int> med = new Dictionary<FishSpecies, int>();
+            Dictionary<FishSpecies, int> large = new Dictionary<FishSpecies, int>();
+            Fishing feeshUser;
+
+            int scount = 0;
+            int mcount = 0;
+            int lcount = 0;
+
             using (var database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 if (otherUser == null)
                 {
+                    feeshUser = database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                }
+                else
+                {
+                    feeshUser = database.Fishing.FirstOrDefault(x => x.Id == otherUser.Id);
+                }
+
+                if (feeshUser == null)
+                {
+                    if (otherUser != null)
+                    {
+                        feeshUser = new Fishing
+                        {
+                            Id = otherUser.Id
+                        };
+                    }
+                    else
+                    {
+                        feeshUser = new Fishing
+                        {
+                            Id = Context.User.Id
+                        };
+                    }
+                    database.Fishing.Add(feeshUser);
+                    await database.SaveChangesAsync();
+                    if (otherUser != null)
+                    {
+                        await Context.Channel.SendMessageAsync($"**{otherUser.Username}** Was added to the database.");
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou were added to database.");
+                    }
+                    return;
+                }
+                else
+                {
+                    inv = feeshUser.GetInventory();
+                }
+
+                foreach (var entry in inv)
+                {
+                    if (entry.Value.Count() > 0)
+                    {
+                        if (entry.Value[0] > 0)
+                        {
+                            scount += entry.Value[0];
+                        }
+                    }
+                    if (entry.Value.Count() > 1)
+                    {
+                        if (entry.Value[1] > 0)
+                        {
+                            mcount += entry.Value[1];
+                        }
+                    }
+                    if (entry.Value.Count() > 2)
+                    {
+                        if (entry.Value[2] > 0)
+                        {
+                            lcount += entry.Value[2];
+                        }
+                    }
+                }
+                
+
+                if (otherUser == null)
+                {
                     var user = database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
                     var muser = database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}'s stats\nFishing level: **{user.Lvl}**\nFishing xp: **{user.TXp}**\nBalance: **{muser.Money/10000d}%**");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}'s stats\nFishing level: **{user.Lvl}**\nMax catch weight: **{(user.Lvl * 5 + 2000d) / 100}kg**\nFishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount})*\nBalance: **{muser.Money / 10000d}%**");
                 }
                 else
                 {
                     var user = database.Fishing.FirstOrDefault(x => x.Id == otherUser.Id);
                     var muser = database.Users.FirstOrDefault(x => x.Id == otherUser.Id);
-                    await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}**\nFishing xp: **{user.TXp}**\nBalance: **{muser.Money/10000d}%**");
+                    await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}**\nMax catch weight: **{(user.Lvl * 5 + 2000d) / 100}kg**\nFishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount}*)\nBalance: **{muser.Money / 10000d}%**");
                 }
+
             }
         }
-
+        [Command("xptolevel"),Alias("tolv")]
+        public async Task XpToNextLevl(ulong lvl)
+        {
+            ulong lvlXp = 50;
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                if (user == null)
+                {
+                    await Context.Channel.SendMessageAsync($"Sorry, **{Context.User.Username}**, my dad was too lazy to ");
+                    return;
+                }
+                if (lvl > 1 && lvl <= 200)
+                {
+                    for (ulong i = 1; i < lvl; i++)
+                    {
+                        if (i <= lvl)
+                        {
+                            lvlXp += Convert.ToUInt64(Math.Round((lvlXp * 0.05d + 50d), 0, MidpointRounding.ToEven));
+                        }
+                    };
+                }
+                else if (lvl == 1)
+                {
+                    lvlXp = 50;
+                }
+                else if (lvl < 1)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nThat's not really possible?");
+                    return;
+                }
+                else if (lvl > 200)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**Lvl 200** is the maximum lvl");
+                    return;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"<@242040333309837327>\nA fucky wucky has occurred with {Context.User.Mention}'s command");
+                    return;
+                }
+                if (user.Lvl >= lvl)
+                {
+                    await Context.Channel.SendMessageAsync($"XP required for **Lvl {lvl} : {lvlXp}**" +
+                                                           $"\nXP since you reached **Lvl {lvl} : {user.TXp - lvlXp}**");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"XP required for **Lvl {lvl} : {lvlXp}**" +
+                                                           $"\nXP left until **Lvl {lvl} : {lvlXp - user.TXp}**");
+                }
+                
+            }
+        }
     }
 }
