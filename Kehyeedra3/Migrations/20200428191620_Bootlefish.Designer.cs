@@ -19,35 +19,6 @@ namespace Kehyeedra3.Migrations
                 .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("Kehyeedra3.Services.Models.BattleFish", b =>
-                {
-                    b.Property<ulong>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<byte>("Equipment")
-                        .HasColumnType("tinyint unsigned");
-
-                    b.Property<byte>("FishType")
-                        .HasColumnType("tinyint unsigned");
-
-                    b.Property<int>("Lvl")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<ulong>("NextXp")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<ulong>("Xp")
-                        .HasColumnType("bigint unsigned");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BattleFish");
-                });
-
             modelBuilder.Entity("Kehyeedra3.Services.Models.Fishing", b =>
                 {
                     b.Property<ulong>("Id")
