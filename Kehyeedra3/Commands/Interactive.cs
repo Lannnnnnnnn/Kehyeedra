@@ -32,6 +32,7 @@ namespace Kehyeedra3.Commands
                 if (user.BattleFish.Any() == false)
                 {
                     await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't have a battlefish.");
+                    return;
                 }
 
                 var fish = user.BattleFish.FirstOrDefault();
