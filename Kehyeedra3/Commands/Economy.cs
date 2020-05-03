@@ -235,7 +235,7 @@ namespace Kehyeedra3.Commands
             if (lastfish < time)
             {
                 int rari = (SRandom.Next(0, 2001));
-                int weight = SRandom.Next(10 + Convert.ToInt32(level * 5), 1501);
+                int weight = SRandom.Next(Convert.ToInt32(level * 5), 1501);
                 ulong rarity;
 
                 if (level < 100)
@@ -375,28 +375,28 @@ namespace Kehyeedra3.Commands
                     weight = 1000;
                 }
 
+                if (weight >= (1000 - Convert.ToInt32(level * 2)))
+                {
+                    weight = SRandom.Next(100, 2001) + Convert.ToInt32(level * 5);
+                }
+
                 if (weight >= 1000)
                 {
                     size = FishSize.Medium;
-                    if (weight >= (1000 - Convert.ToInt32(level * 2)))
-                    {
-                        weight = SRandom.Next(10, 2001) + Convert.ToInt32(level * 5);
-                    }
 
                     if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
                     {
                         weight = SRandom.Next(2000 + Convert.ToInt32(level * 20), 40001);
                     }
+
                     double w = Convert.ToDouble(weight);
-                    if (weight >= 1000)
+                    xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
+
+                    if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
                     {
-                        xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
-                        if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
+                        if (xp < 100)
                         {
-                            if (xp < 100)
-                            {
-                                xp = 100;
-                            }
+                            xp = 100;
                         }
                     }
                 }
