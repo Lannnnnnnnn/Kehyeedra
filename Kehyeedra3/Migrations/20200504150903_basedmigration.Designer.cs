@@ -9,14 +9,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kehyeedra3.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200330063400_store")]
-    partial class store
+    [Migration("20200504150903_basedmigration")]
+    partial class basedmigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.1")
+                .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Kehyeedra3.Services.Models.Fishing", b =>
@@ -34,6 +34,15 @@ namespace Kehyeedra3.Migrations
                     b.Property<ulong>("Lvl")
                         .HasColumnType("bigint unsigned");
 
+                    b.Property<int>("Prestige")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("RodOwned")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.Property<byte>("RodUsed")
+                        .HasColumnType("tinyint unsigned");
+
                     b.Property<ulong>("TXp")
                         .HasColumnType("bigint unsigned");
 
@@ -43,6 +52,43 @@ namespace Kehyeedra3.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Fishing");
+                });
+
+            modelBuilder.Entity("Kehyeedra3.Services.Models.ItemOffer", b =>
+                {
+                    b.Property<ulong>("OfferId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<ulong>("BuyerId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<bool>("IsPurchaseFromStore")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSellOffer")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<ulong>("ItemId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<int>("OfferAmount")
+                        .HasColumnType("int");
+
+                    b.Property<ulong?>("StoreFrontId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<ulong>("StoreId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.HasKey("OfferId");
+
+                    b.HasIndex("StoreFrontId");
+
+                    b.ToTable("ItemOffer");
                 });
 
             modelBuilder.Entity("Kehyeedra3.Services.Models.Reminder", b =>
@@ -119,6 +165,9 @@ namespace Kehyeedra3.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
+                    b.Property<string>("GeneralInventory")
+                        .HasColumnType("LONGTEXT");
+
                     b.Property<ulong>("LastMine")
                         .HasColumnType("bigint unsigned");
 
@@ -133,11 +182,56 @@ namespace Kehyeedra3.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Kehyeedra3.Services.Models.User+BattleFishObject", b =>
+                {
+                    b.Property<ulong>("FishId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<byte>("FishType")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.Property<int>("Lvl")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<ulong>("NextXp")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<ulong?>("UserId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<ulong>("Xp")
+                        .HasColumnType("bigint unsigned");
+
+                    b.HasKey("FishId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BattleFishObject");
+                });
+
+            modelBuilder.Entity("Kehyeedra3.Services.Models.ItemOffer", b =>
+                {
+                    b.HasOne("Kehyeedra3.Services.Models.StoreFront", null)
+                        .WithMany("Offers")
+                        .HasForeignKey("StoreFrontId");
+                });
+
             modelBuilder.Entity("Kehyeedra3.Services.Models.StoreInventory", b =>
                 {
                     b.HasOne("Kehyeedra3.Services.Models.StoreFront", null)
                         .WithMany("Items")
                         .HasForeignKey("StoreFrontId");
+                });
+
+            modelBuilder.Entity("Kehyeedra3.Services.Models.User+BattleFishObject", b =>
+                {
+                    b.HasOne("Kehyeedra3.Services.Models.User", null)
+                        .WithMany("BattleFish")
+                        .HasForeignKey("UserId");
                 });
 #pragma warning restore 612, 618
         }

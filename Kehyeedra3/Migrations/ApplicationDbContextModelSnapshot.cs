@@ -32,6 +32,9 @@ namespace Kehyeedra3.Migrations
                     b.Property<ulong>("Lvl")
                         .HasColumnType("bigint unsigned");
 
+                    b.Property<int>("Prestige")
+                        .HasColumnType("int");
+
                     b.Property<byte>("RodOwned")
                         .HasColumnType("tinyint unsigned");
 

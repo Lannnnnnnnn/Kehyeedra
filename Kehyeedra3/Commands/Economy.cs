@@ -200,6 +200,7 @@ namespace Kehyeedra3.Commands
             ulong xp;
             ulong level;
             ulong lvlXp;
+            int prestige;
             int rod;
             Dictionary<FishSpecies, int[]> inv = new Dictionary<FishSpecies, int[]>();
             List<Fish> fishes = Fishing.GetFishList();
@@ -226,6 +227,7 @@ namespace Kehyeedra3.Commands
                 totalXp = user.TXp;
                 lvlXp = user.Xp;
                 rod = user.RodUsed;
+                prestige = user.Prestige;
 
                 await Database.SaveChangesAsync();
             }
@@ -235,24 +237,26 @@ namespace Kehyeedra3.Commands
             if (lastfish < time)
             {
                 int rari = (SRandom.Next(0, 2001));
-                int weight = SRandom.Next(Convert.ToInt32(level * 5), 1501);
+                int weigh = SRandom.Next(10, 1501+prestige*500);
+                int tierRoll = SRandom.Next(0, 101+prestige*100);
                 ulong rarity;
+                int weight;
 
-                if (level < 100)
+                if (level < 100 && prestige == 0)
                 {
                     rarity = level * 10 + (ulong)rari;
+                    weight = (int)level * 5 + weigh; 
                 }
                 else
                 {
                     rarity = 1000 + (ulong)rari;
+                    weight = 500 + weigh;
                 }
 
                 Fish fish;
 
                 if (rarity == 777 || (rarity > 2060 && rarity <= 2070) || rarity == 2777)
                 {
-                    int tierRoll = SRandom.Next(0, 101);
-
                     if (rod >= 3 && tierRoll > 60)
                     {
                         List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Legendary).ToList();
@@ -284,8 +288,7 @@ namespace Kehyeedra3.Commands
                 }
                 else if (rarity > 1700)
                 {
-                    int tierRoll = SRandom.Next(0, 101);
-                    rarity = Convert.ToUInt64(SRandom.Next(1750, 2801));
+                    rarity = Convert.ToUInt64(SRandom.Next(1700, 2801));
                     if (rod >= 3 && tierRoll > 60)
                     {
                         List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Uncommon).ToList();
@@ -341,7 +344,6 @@ namespace Kehyeedra3.Commands
                 }
                 else
                 {
-                    int tierRoll = SRandom.Next(0, 101);
                     if (rod >= 3 && tierRoll > 60)
                     {
                         List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Common).ToList();
@@ -354,7 +356,7 @@ namespace Kehyeedra3.Commands
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                         xp = 8;
                     }
-                    else if (rod >= 1 && tierRoll >= 20)
+                    else if (rod >= 1 && tierRoll > 20)
                     {
                         List<Fish> possibleFishes = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Common).ToList();
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
@@ -377,18 +379,25 @@ namespace Kehyeedra3.Commands
 
                 if (weight >= (1000 - Convert.ToInt32(level * 2)))
                 {
-                    weight = SRandom.Next(100, 2001) + Convert.ToInt32(level * 5);
+                    weight = SRandom.Next(100, 2001) + Convert.ToInt32(level * 5 + (Convert.ToUInt64(prestige * 500)));
                 }
 
                 if (weight >= 1000)
                 {
-                    size = FishSize.Medium;
-
                     if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
                     {
-                        weight = SRandom.Next(2000 + Convert.ToInt32(level * 20), 40001);
+                        weight = SRandom.Next(2000 + Convert.ToInt32(level * 20), 40001+prestige*10000);
                     }
 
+                    if (weight >= 1500)
+                    {
+                        size = FishSize.Large;
+                    }
+                    else
+                    {
+                        size = FishSize.Medium;
+                    }
+                    
                     double w = Convert.ToDouble(weight);
                     xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
 
@@ -403,11 +412,6 @@ namespace Kehyeedra3.Commands
                 else
                 {
                     size = FishSize.Small;
-                }
-
-                if (weight >= 1500)
-                {
-                    size = FishSize.Large;
                 }
 
                 string lvlUp = "";
@@ -503,12 +507,12 @@ namespace Kehyeedra3.Commands
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} Your line snaps. Your disappointment is immeasurable, and your day is ruined.");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYour line snaps. Your disappointment is immeasurable, and your day is ruined.");
                 }
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention} arrrrr-right, ye scurby bastard, I know yer eager t' scour the seven seas but ye needs t' wait till the next minute t' pillage the booty'o'the depths, savvy?");
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\narrrrr-right, ye scurby bastard, I know yer eager t' scour the seven seas but ye needs t' wait till the next minute t' pillage the booty'o'the depths, savvy?");
             }
 
         }
@@ -1023,6 +1027,10 @@ namespace Kehyeedra3.Commands
                         var user = Database.Users.FirstOrDefault(x => x.Id == users[i].Id);
                         string xp = $"{users[i].TXp}";
                         string level = $"{users[i].Lvl}";
+                        if (users[i].Prestige > 0)
+                        {
+                            level += $" + {users[i].Prestige}P";
+                        }
                         leaderboardMessage += $"\n**#{placing} : {user.Username}** Lvl : **{level}**\n*{xp}xp*";
                     }
                     await Context.Channel.SendMessageAsync(leaderboardMessage);
@@ -1155,23 +1163,110 @@ namespace Kehyeedra3.Commands
                         }
                     }
                 }
-                
 
                 if (otherUser == null)
                 {
                     var user = database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
                     var muser = database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}'s stats\nFishing level: **{user.Lvl}**\nMax catch weight: **{(user.Lvl * 5 + 2000d) / 100}kg**\nMin catch weight: **{(user.Lvl*5d + 10d)/100}kg**\n" +
+                    string pres = "";
+                    double cawe = 0;
+                    if (user.Prestige > 0)
+                    {
+                        pres = $" +{user.Prestige}P";
+                        cawe = 500;
+                    }
+                    else
+                    {
+                        cawe = user.Lvl * 5d + 10d;
+                    }
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}'s stats\nFishing level: **{user.Lvl}{pres}**\nMax catch weight: **{(user.Lvl * 5 + 2000d + user.Prestige*500d) / 100}kg**\nMin catch weight: **{cawe /100}kg**\n" +
                         $"Fishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount})*\nBalance: **{muser.Money / 10000d}%**");
                 }
                 else
                 {
                     var user = database.Fishing.FirstOrDefault(x => x.Id == otherUser.Id);
                     var muser = database.Users.FirstOrDefault(x => x.Id == otherUser.Id);
-                    await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}**\nMax catch weight: **{(user.Lvl * 5 + 2000d) / 100}kg**\nMin catch weight: **{(user.Lvl * 5d + 10d) / 100}kg**\n" +
+                    string pres = "";
+                    double cawe = 0;
+                    if (user.Prestige > 0)
+                    {
+                        pres = $" +{user.Prestige}P";
+                        cawe = 510;
+                    }
+                    else
+                    {
+                        cawe = user.Lvl * 5d + 10d;
+                    }
+                    await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}{pres}**+P{user.Prestige}\nMax catch weight: **{(user.Lvl * 5 + 2000d + user.Prestige*500d) / 100}kg**\nMin catch weight: **{cawe / 100}kg**\n" +
                         $"Fishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount}*)\nBalance: **{muser.Money / 10000d}%**");
                 }
-
+            }
+        }
+        [Command("prestige",RunMode = RunMode.Async),Summary("Sacrifice a load of XP for benefits and growth potential.")]
+        public async Task PrestigeCommand()
+        {
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
+                if (user == null)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYour first prestige is available at **Lvl 100** in **130503xp**.");
+                    return;
+                }
+                else
+                {
+                    ulong presXp = 50;
+                    if (user.Prestige > 0 || user.TXp >= 130503)
+                    {
+                        for (ulong i = 1; i < 100 + (ulong)user.Prestige*5; i++)
+                        {
+                            if (i <= 100 + (ulong)user.Prestige*5)
+                            {
+                                presXp += Convert.ToUInt64(Math.Round((presXp * 0.05d + 50d), 0, MidpointRounding.ToEven));
+                            }
+                        };
+                        if (user.TXp >= presXp)
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**Tier {user.Prestige+1}** is available! Type **confirm** to buy it for **{presXp}xp**.");
+                            var message = await NextMessageAsync();
+                            if (message.Content.ToLowerInvariant() == "confirm")
+                            {
+                                user.Prestige++;
+                                user.TXp -= presXp;
+                                user.Xp = 0;
+                                user.Lvl = 0;
+                                ulong lvlXp = 0;
+                                while (user.TXp >= user.Xp)
+                                {
+                                    user.Lvl += 1;
+                                    lvlXp = 50;
+                                    for (ulong i = 0; i < user.Lvl; i++)
+                                    {
+                                        if (i <= user.Lvl)
+                                        {
+                                            lvlXp += Convert.ToUInt64(Math.Round((lvlXp * 0.05d + 50d), 0, MidpointRounding.ToEven));
+                                        }
+                                    }
+                                    user.Xp = lvlXp;
+                                }
+                                await Database.SaveChangesAsync();
+                                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou've successfully upgraded to **P{user.Prestige}**.\nReadjusting level.");
+                            }
+                            else
+                            {
+                                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nCome back when you change your mind.");
+                            }
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYour next prestige is available at **Lvl {100+user.Prestige*5}** in **{presXp - user.TXp}xp**.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYour first prestige is available at **Lvl 100** in **{130503-user.TXp}xp**.");
+                    }
+                }
             }
         }
         [Command("xptolevel"),Alias("tolv", "xpto"),Summary("Displays how much xp you need to reach the given level.")]

@@ -35,6 +35,7 @@ namespace Kehyeedra3.Services.Models
         public ulong Lvl { get; set; } = 0;
         public byte RodOwned { get; set; } = 0;
         public byte RodUsed { get; set; } = 0;
+        public int Prestige { get; set; } = 0;
 
         [Column(TypeName="LONGTEXT")]
         public string Inventory { get; set; } = "{}";
