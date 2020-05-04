@@ -11,7 +11,10 @@ namespace Kehyeedra3.Services
         private static async Task SendReminderAsync(Reminder reminder)
         {
             var dmchannel = await Bot._bot.GetUser(reminder.UserId).GetOrCreateDMChannelAsync();
-            await dmchannel.SendMessageAsync(reminder.Message);
+            if (dmchannel != null)
+            {
+                await dmchannel.SendMessageAsync(reminder.Message);
+            }
         }
         public async Task Tick()
         {

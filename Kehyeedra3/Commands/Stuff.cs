@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Kehyeedra3.Services.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -103,14 +104,18 @@ namespace Kehyeedra3.Commands
             await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n{output+1}");
         }
         [Command("remind"), Summary("Reminds you in a given time. (days, hours, minutes) Eg. 'remind 1 2 3 wash hands' would remind you in 1 day, 2 hours, 3 minutes to wash your hands")]
-        public async Task Reminder(ulong d, ulong h, ulong m, [Remainder] string r)
+        public async Task Reminder(ulong d, ulong h, ulong m, [Remainder] string r = null)
         {
-            DateTime dt = DateTime.UtcNow;
-
-            string time = dt.ToString("dd/MM/yyyy HH:mm");
             string remin = "";
+            string refix = "";
+            string resuff = "";
             ulong sen = (d * 86400) + (h * 3600) + (m * 60);
             ulong yeedraStamp = DateTime.UtcNow.ToYeedraStamp();
+
+            if (r == null)
+            {
+                r = "Fill the text field next time you make a reminder.";
+            }
 
             while (m > 59)
             {
@@ -123,12 +128,48 @@ namespace Kehyeedra3.Commands
                 h -= 24;
             }
 
+            if (d > 0)
+            {
+                remin += $" {d} day";
+                if (d > 1)
+                {
+                    remin += $"s";
+                }
+            }
+            if (h > 0)
+            {
+                remin += $" {h} hour";
+                if (h > 1)
+                {
+                    remin += $"s";
+                }
+            }
+            if (m > 0)
+            {
+                remin += $" {m} minute";
+                if (m > 1)
+                {
+                    remin += $"s";
+                }
+            }
+
+            if (d == 0 && h == 0 && m == 0)
+            {
+                refix += "right now";
+                resuff += " just now";
+            }
+            else
+            {
+                refix += "in";
+                resuff += " ago";
+            }
+
             if (sen < 63072000)
             {
                 var reminder = new Reminder
                 {
                     UserId = Context.User.Id,
-                    Message = ($"At **UTC {time}** you wanted me to remind you:\n**'{r}'**"),
+                    Message = $"**Reminder from{remin}{resuff}:**\n\n''{r}''",
                     Created = yeedraStamp,
                     Send = sen + yeedraStamp
                 };
@@ -146,20 +187,7 @@ namespace Kehyeedra3.Commands
                 return;
             }
 
-
-            if (d > 0)
-            {
-                remin += $" {d} days";
-            }
-            if (h > 0)
-            {
-                remin += $" {h} hours";
-            }
-            if (m > 0)
-            {
-                remin += $" {m} minutes";
-            }
-            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n Ok, I'll remind you in{remin}.");
+            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n Ok, I'll remind you {refix}{remin}.");
         }
 
         [Command("dab"), Summary("Dabs a person")]
