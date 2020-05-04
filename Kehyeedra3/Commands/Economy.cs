@@ -249,7 +249,7 @@ namespace Kehyeedra3.Commands
 
                 Fish fish;
 
-                if (rarity == 777 || (rarity > 2060 && rarity <= 2070) || (rarity >= 2765 && rarity <= 2767))
+                if (rarity == 777 || (rarity > 2060 && rarity <= 2070) || rarity == 2777)
                 {
                     int tierRoll = SRandom.Next(0, 101);
 
@@ -277,9 +277,9 @@ namespace Kehyeedra3.Commands
                         fish = possibleFishes[SRandom.Next(possibleFishes.Count)];
                         xp = 10;
                     }
-                    if (rarity == 777)
+                    if (rarity == 777 || rarity == 2777)
                     {
-                        xp = 77;
+                        xp = 77+(77*Convert.ToUInt64(rod/2));
                     }
                 }
                 else if (rarity > 1700)
@@ -1175,12 +1175,12 @@ namespace Kehyeedra3.Commands
             }
         }
         [Command("xptolevel"),Alias("tolv", "xpto"),Summary("Displays how much xp you need to reach the given level.")]
-        public async Task XpToNextLevl(ulong lvl)
+        public async Task XpToNextLevl(ulong lvl, string xp = null)
         {
             ulong lvlXp = 50;
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                if (lvl > 1 && lvl <= 200)
+                if (lvl > 1 && lvl <= 200 && xp == null)
                 {
                     for (ulong i = 1; i < lvl; i++)
                     {
@@ -1199,34 +1199,59 @@ namespace Kehyeedra3.Commands
                     await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nThat's not really possible?");
                     return;
                 }
-                else if (lvl > 200)
+                else if (lvl > 200 && xp == null)
                 {
                     await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**Lvl 200** is the maximum lvl");
                     return;
                 }
-                else
-                {
-                    await Context.Channel.SendMessageAsync($"<@242040333309837327>\nA fucky wucky has occurred with {Context.User.Mention}'s command");
-                    return;
-                }
+                
                 var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
-                if (user == null)
+                if (xp != null && xp == "xp")
                 {
+                    if (user == null)
                     {
-                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**");
-                    }
-                }
-                else
-                {
-                    if (user.Lvl >= lvl)
-                    {
-                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
-                                                               $"\nXP since you reached **Lvl {lvl} : {user.TXp - lvlXp}**");
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n???");
+                        }
                     }
                     else
                     {
-                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
-                                                               $"\nXP left until **Lvl {lvl} : {lvlXp - user.TXp}**");
+                        if (user.TXp >= lvl)
+                        {
+                            await Context.Channel.SendMessageAsync($"XP since you reached **{lvl}xp : {user.TXp - lvl}**" +
+                                                                   $"\nCurrent XP : **{user.TXp}**");
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"XP left until **{lvl}xp : {lvl - user.TXp}**" +
+                                                                   $"\nCurrent XP : **{user.TXp}**" +
+                                                                   $"\nProgress to goal : **~{Math.Round(((user.TXp * 100d) / lvl), 0, MidpointRounding.ToEven)}%**");
+                        }
+                    }
+                }
+                else
+                {
+                    if (user == null)
+                    {
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**");
+                        }
+                    }
+                    else
+                    {
+                        if (user.Lvl >= lvl)
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
+                                                                   $"\nXP since you reached **Lvl {lvl} : {user.TXp - lvlXp}**" +
+                                                                   $"\nCurrent XP : **{user.TXp}**");
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
+                                                                   $"\nXP left until **Lvl {lvl} : {lvlXp - user.TXp}**" +
+                                                                   $"\nCurrent XP : **{user.TXp}**" +
+                                                                   $"\nProgress to goal : **~{Math.Round(((user.TXp * 100d) / lvlXp), 0, MidpointRounding.ToEven)}%**");
+                        }
                     }
                 }
             }
