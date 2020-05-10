@@ -158,33 +158,29 @@ namespace Kehyeedra3.Commands
                     }
                 }
 
-                if (end == 0)
+                if (end <= 0)
                 {
                     await Context.Channel.SendMessageAsync($"{marks}\n{Context.User.Mention} You have found {ore} {discard}.");
+                    return;
                 }
-                else
+                else if(end < 3)
                 {
-                    if (end < 3)
-                    {
-                        await Context.Channel.SendMessageAsync($"{marks}\n{Context.User.Mention} You found {end / 10000d}% while mining");
-                    }
+                    await Context.Channel.SendMessageAsync($"{marks}\n{Context.User.Mention} You found {end / 10000d}% while mining");
                 }
 
-                if (end != 0)
+                using (var Database = new ApplicationDbContextFactory().CreateDbContext())
                 {
-                    using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+                    var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
+
+                    if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), end))
                     {
-                        var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
-
-                        if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), end))
-                        {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble.");
-                            return;
-                        }
-
-                        await Database.SaveChangesAsync();
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble.");
+                        return;
                     }
+
+                    await Database.SaveChangesAsync();
                 }
+                
             }
             else
             {
@@ -238,9 +234,21 @@ namespace Kehyeedra3.Commands
             {
                 int rari = (SRandom.Next(0, 2001));
                 int weigh = SRandom.Next(10, 1501+prestige*500);
-                int tierRoll = SRandom.Next(0, 101+prestige*100);
+                int tierRoll = SRandom.Next(0, 81+prestige*40);
+                int dCatchRoll = SRandom.Next(0, 1000+prestige*5);
+                int dcatch = 1;
                 ulong rarity;
                 int weight;
+
+                if (dCatchRoll > 1000)
+                {
+                    int many = 995;
+                    while (many+5 <= dCatchRoll)
+                    {
+                        dcatch += 1;
+                        many += 5;
+                    }
+                }
 
                 if (level < 100 && prestige == 0)
                 {
@@ -381,14 +389,14 @@ namespace Kehyeedra3.Commands
                 {
                     weight = SRandom.Next(100, 2001) + Convert.ToInt32(level * 5 + (Convert.ToUInt64(prestige * 500)));
                 }
+                if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
+                {
+                    weight = SRandom.Next(2000 + Convert.ToInt32(level * 20), 40001 + prestige * 10000);
+                }
 
                 if (weight >= 1000)
                 {
-                    if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
-                    {
-                        weight = SRandom.Next(2000 + Convert.ToInt32(level * 20), 40001+prestige*10000);
-                    }
-
+                    
                     if (weight >= 1500)
                     {
                         size = FishSize.Large;
@@ -399,7 +407,7 @@ namespace Kehyeedra3.Commands
                     }
                     
                     double w = Convert.ToDouble(weight);
-                    xp = Convert.ToUInt64(Math.Round((xp * w / 1000), 0, MidpointRounding.ToEven));
+                    xp = Convert.ToUInt64(Math.Round(xp * w / 1000, 0, MidpointRounding.ToEven))*(ulong)dcatch;
 
                     if (fish.Rarity == FishRarity.Legendary || fish.Rarity == FishRarity.T2Legendary || fish.Rarity == FishRarity.T3Legendary || fish.Rarity == FishRarity.T4Legendary)
                     {
@@ -440,7 +448,7 @@ namespace Kehyeedra3.Commands
                         }
 
                         int sizeIndex = (int)size;
-                        amounts[sizeIndex]++;
+                        amounts[sizeIndex] += dcatch;
 
                         user.SetInventory(inv);
 
@@ -502,8 +510,15 @@ namespace Kehyeedra3.Commands
 
                         await Database.SaveChangesAsync().ConfigureAwait(false); // :]
                     }
-
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n {fish.Emote} You have caught a {weight / 100d}kg **{fish.Name}**, rarity: {fish.Rarity}\nYou gain **{xp}**xp.\n{lvlUp}");
+                    if (dcatch == 1)
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n {fish.Emote} You have caught a {weight / 100d}kg **{fish.Name}**, rarity: {fish.Rarity}\nYou gain **{xp}**xp.\n{lvlUp}");
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n {fish.Emote} You have caught **{dcatch}** {weight / 100d}kg **{fish.Name}**, rarity: {fish.Rarity}\nYou gain **{xp}**xp.\n{lvlUp}");
+                    }
+                    
                 }
                 else
                 {
@@ -608,101 +623,58 @@ namespace Kehyeedra3.Commands
                 Dictionary<FishSpecies, int> med = new Dictionary<FishSpecies, int>();
                 Dictionary<FishSpecies, int> large = new Dictionary<FishSpecies, int>();
 
+                List<Fish> fishes = Fishing.GetFishList();
+                List<Fish> legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
+                List<Fish> rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
+                List<Fish> uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
+                List<Fish> comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Common).ToList();
+
+                string legendary = "";
+                string rare = "";
+                string uncommon = "";
+                string common = "";
+                int lc = 0;
+                string fishnam = "";
+                string fishmote = "";
+                string fishtext = "";
                 foreach (var entry in inv)
                 {
-                    if (entry.Value.Count() > 0)
+                    lc += 1;
+                    fishmote = fishes.FirstOrDefault(x => x.Id == entry.Key).Emote;
+                    if (entry.Key == FishSpecies.LuckyCatfish)
                     {
-                        if (entry.Value[0] > 0)
-                        {
-                            small.Add(entry.Key, entry.Value[0]);
-                        }
+                        fishnam = "Lucky Catfish";
                     }
-                    if (entry.Value.Count() > 1)
+                    else
                     {
-                        if (entry.Value[1] > 0)
-                        {
-                            med.Add(entry.Key, entry.Value[1]);
-                        }
+                        fishnam = $"{entry.Key}";
                     }
-                    if (entry.Value.Count() > 2)
+                    fishtext = $"**{fishmote}  [S{entry.Value[0]} M{entry.Value[1]} L{entry.Value[2]}]**\n";
+
+                    if (legfish.Any( f => f.Id == entry.Key))
                     {
-                        if (entry.Value[2] > 0)
-                        {
-                            large.Add(entry.Key, entry.Value[2]);
-                        }
+                        legendary += $"{fishtext}";
+                    }
+                    if (rarfish.Any(f => f.Id == entry.Key))
+                    {
+                        rare += $"{fishtext}";
+                    }
+                    if (uncfish.Any(f => f.Id == entry.Key))
+                    {
+                        uncommon += $"{fishtext}";
+                    }
+                    if (comfish.Any(f => f.Id == entry.Key))
+                    {
+                        common += $"{fishtext}";
                     }
                 }
-
                 if (user.Id != Context.User.Id)
                 {
-                    await Context.Channel.SendMessageAsync($"arr matey this be {user.Mention}'s locker");
+                    await Context.Channel.SendMessageAsync($"arr matey this be {user.Mention}'s locker\n{legendary}\n{rare}\n{uncommon}\n{common}");
                 }
-
-                if (small.Any())
+                else
                 {
-                    EmbedBuilder embed = new EmbedBuilder
-                    {
-                        Title = "small mateys"
-                    };
-
-                    foreach (var entry in small)
-                    {
-                        if (entry.Key == FishSpecies.LuckyCatfish)
-                        {
-                            embed.AddField("Lucky Catfish", $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
-                        }
-                        else
-                        {
-                            embed.AddField(entry.Key.ToString(), $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
-                        }
-                    }
-
-                    await Context.Channel.SendMessageAsync($"", embed: embed.Build());
-                }
-
-                if (med.Any())
-                {
-                    EmbedBuilder embed = new EmbedBuilder
-                    {
-                        Title = "medium mateys"
-                    };
-
-                    foreach (var entry in med)
-                    {
-                        if (entry.Key == FishSpecies.LuckyCatfish)
-                        {
-                            embed.AddField("Lucky Catfish", $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
-                        }
-                        else
-                        {
-
-                            embed.AddField(entry.Key.ToString(), $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
-                        }
-                    }
-
-                    await Context.Channel.SendMessageAsync($"", embed: embed.Build());
-                }
-
-                if (large.Any())
-                {
-                    EmbedBuilder embed = new EmbedBuilder
-                    {
-                        Title = "large mateys"
-                    };
-
-                    foreach (var entry in large)
-                    {
-                        if (entry.Key == FishSpecies.LuckyCatfish)
-                        {
-                            embed.AddField("Lucky Catfish", $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
-                        }
-                        else
-                        {
-                            embed.AddField(entry.Key.ToString(), $"{entry.Value} feeshie{(entry.Value > 1 ? "s" : "")}", true);
-                        }
-                    }
-
-                    await Context.Channel.SendMessageAsync($"", embed: embed.Build());
+                    await Context.Channel.SendMessageAsync($"arr matey this be {Context.User.Mention}'s locker\n{legendary}\n{rare}\n{uncommon}\n{common}");
                 }
             }
             else
