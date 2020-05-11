@@ -14,6 +14,13 @@ namespace Kehyeedra3
         public static DateTime FromYeedraStamp(this ulong time)
             => YeedraTime.AddSeconds(Convert.ToDouble(time));
 
+        public static string ToYeedraDisplay(this long number)
+        {
+            double numb = (double)number/10000;
+            return numb.ToString("N4");
+        }
+        
+
         //https://stackoverflow.com/a/1262619
         public static void Shuffle<T>(this IList<T> list)
         {

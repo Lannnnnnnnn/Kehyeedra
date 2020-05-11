@@ -114,7 +114,7 @@ namespace Kehyeedra3.Commands
                 int res1 = SRandom.Next(0, 101);
                 int res2 = SRandom.Next(0, 101);
                 int res3 = SRandom.Next(0, 101);
-                int end = 0;
+                long end = 0;
                 string marks = $"{n}{n}{n}";
                 int num = SRandom.Next(ores.Length);
                 int numd = SRandom.Next(discards.Length);
@@ -134,7 +134,7 @@ namespace Kehyeedra3.Commands
                             string bonus = "";
                             int res4 = SRandom.Next(0, 6) * 2;
                             int res5 = res4 / 2;
-                            end = res4 + 3;
+                            end = (long)res4 + 3;
                             for (int i = 0; i < 5; i++)
                             {
                                 if (i < res5)
@@ -148,11 +148,11 @@ namespace Kehyeedra3.Commands
                             }
                             if (res4 == 0)
                             {
-                                await Context.Channel.SendMessageAsync($"{marks} **+** {bonus}\n{Context.User.Mention} **Lucky strike!** Bonus: {ore} You earned {end / 10000d}%");
+                                await Context.Channel.SendMessageAsync($"{marks} **+** {bonus}\n{Context.User.Mention} **Lucky strike!** Bonus: {ore} You earned {end.ToYeedraDisplay()}%");
                             }
                             else
                             {
-                                await Context.Channel.SendMessageAsync($"{marks} **+** {bonus}\n{Context.User.Mention} **Lucky strike!** Bonus: {res4}, You earned {end / 10000d}%");
+                                await Context.Channel.SendMessageAsync($"{marks} **+** {bonus}\n{Context.User.Mention} **Lucky strike!** Bonus: {res4}, You earned {end.ToYeedraDisplay()}%");
                             }
                         }
                     }
@@ -165,7 +165,7 @@ namespace Kehyeedra3.Commands
                 }
                 else if(end < 3)
                 {
-                    await Context.Channel.SendMessageAsync($"{marks}\n{Context.User.Mention} You found {end / 10000d}% while mining");
+                    await Context.Channel.SendMessageAsync($"{marks}\n{Context.User.Mention} You found {end.ToYeedraDisplay()}% while mining");
                 }
 
                 using (var Database = new ApplicationDbContextFactory().CreateDbContext())
@@ -590,11 +590,18 @@ namespace Kehyeedra3.Commands
 
             }
         }
-        [Command("inventory"), Alias("inv", "fishinv"), Summary("Shows the fish you have currently. Might show other things in the distant future.")]
-        public async Task FishInventory([Remainder]IGuildUser user = null)
+        [Command("inventory"), Alias("inv", "fishinv"), Summary("Shows the fish you have currently. Variables: fish tier")]
+        public async Task FishInventory(int? tier = null, IGuildUser user = null)
         {
             if (user == null)
+            {
                 user = Context.User as IGuildUser;
+            }
+
+            if (tier == null)
+            {
+                tier = 1;
+            }
 
             Fishing feeshUser;
             Dictionary<FishSpecies, int[]> inv = new Dictionary<FishSpecies, int[]>();
@@ -624,32 +631,69 @@ namespace Kehyeedra3.Commands
                 Dictionary<FishSpecies, int> large = new Dictionary<FishSpecies, int>();
 
                 List<Fish> fishes = Fishing.GetFishList();
+
                 List<Fish> legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
                 List<Fish> rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
                 List<Fish> uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
                 List<Fish> comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Common).ToList();
 
+                if (tier > 1 && tier < 5)
+                {
+                    switch (tier)
+                    {
+                        case 2:
+                            {
+                                legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Legendary).ToList();
+                                rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Rare).ToList();
+                                uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Uncommon).ToList();
+                                comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Common).ToList();
+                            }
+                            break;
+                        case 3:
+                            {
+                                legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Legendary).ToList();
+                                rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Rare).ToList();
+                                uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Uncommon).ToList();
+                                comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Common).ToList();
+                            }
+                            break;
+                        case 4:
+                            {
+                                legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Legendary).ToList();
+                                rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Rare).ToList();
+                                uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Uncommon).ToList();
+                                comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Common).ToList();
+                            }
+                            break;
+                    }
+                }
+                else if (tier < 1 || tier > 4)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTier not available.");
+                    return;
+                }
+
                 string legendary = "";
                 string rare = "";
                 string uncommon = "";
                 string common = "";
-                int lc = 0;
-                string fishnam = "";
                 string fishmote = "";
                 string fishtext = "";
                 foreach (var entry in inv)
                 {
-                    lc += 1;
+
                     fishmote = fishes.FirstOrDefault(x => x.Id == entry.Key).Emote;
-                    if (entry.Key == FishSpecies.LuckyCatfish)
+
+                    if (!fishmote.Contains("><"))
                     {
-                        fishnam = "Lucky Catfish";
+                        fishmote += "<:emptyslot:709350723199959101>";
                     }
-                    else
+                    if (fishmote.Contains("missingLeg"))
                     {
-                        fishnam = $"{entry.Key}";
+                        fishmote = fishes.FirstOrDefault(x => x.Id == entry.Key).Name;
                     }
-                    fishtext = $"**{fishmote}  [S{entry.Value[0]} M{entry.Value[1]} L{entry.Value[2]}]**\n";
+
+                    fishtext = $"{fishmote} [ **S**-{entry.Value[0]}  **M**-{entry.Value[1]}  **L**-{entry.Value[2]} ]\n";
 
                     if (legfish.Any( f => f.Id == entry.Key))
                     {
@@ -668,13 +712,32 @@ namespace Kehyeedra3.Commands
                         common += $"{fishtext}";
                     }
                 }
+                string locker = $"";
+                if (legendary != "")
+                {
+                    locker += $"{legendary}\n";
+                }
+                if (rare != "")
+                {
+                    locker += $"{rare}\n";
+                }
+                if (uncommon != "")
+                {
+                    locker += $"{uncommon}\n";
+                }
+                locker += $"{common}";
+                if (locker == "")
+                {
+                    await Context.Channel.SendMessageAsync($"there be nothin' in this locker, cap'n");
+                    return;
+                }
                 if (user.Id != Context.User.Id)
                 {
-                    await Context.Channel.SendMessageAsync($"arr matey this be {user.Mention}'s locker\n{legendary}\n{rare}\n{uncommon}\n{common}");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n{user.Username}'s inventory\n{locker}");
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"arr matey this be {Context.User.Mention}'s locker\n{legendary}\n{rare}\n{uncommon}\n{common}");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n{locker}");
                 }
             }
             else
@@ -738,7 +801,7 @@ namespace Kehyeedra3.Commands
                             {
                                 if (itm.Amount >= amount)
                                 {
-                                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to buy item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+                                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to buy item **{size} {species}** for **{((long)price).ToYeedraDisplay()}%**").ConfigureAwait(false);
                                 }
                                 else
                                 {
@@ -797,9 +860,9 @@ namespace Kehyeedra3.Commands
                     await Context.Channel.SendMessageAsync($"{Context.User.Mention} The goo pool contains no such fish.");
                     return;
                 }
-                contents += $"\ntype: sell\nitem: {size} {species}\namount: {amount}\nprice: {price / 10000d}%\n";
+                contents += $"\ntype: sell\nitem: {size} {species}\namount: {amount}\nprice: {((long)price).ToYeedraDisplay()}%\n";
 
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to sell item **{size} {species}** for **{price / 10000d}%**").ConfigureAwait(false);
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTrade offer to sell item **{size} {species}** for **{((long)price).ToYeedraDisplay()}%**").ConfigureAwait(false);
 
                 await Context.Channel.SendMessageAsync($"{contents}").ConfigureAwait(false);
             }
@@ -866,7 +929,7 @@ namespace Kehyeedra3.Commands
                         await Database.SaveChangesAsync();
                     }
                 }
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention} You own {user.Money / 10000d}%\nWhich is ~{Math.Round(((user.Money * 100d) / (1000000d - buser.Money - suser.Money)), 2, MidpointRounding.ToEven)}% of the money in circulation");
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention} You own {user.Money.ToYeedraDisplay()}%\nWhich is ~{Math.Round(((user.Money * 100d) / (1000000d - buser.Money - suser.Money)), 2, MidpointRounding.ToEven)}% of the money in circulation");
             }
             else
             {
@@ -884,7 +947,7 @@ namespace Kehyeedra3.Commands
                         await Database.SaveChangesAsync();
                     }
                 }
-                await Context.Channel.SendMessageAsync($"{otherUser.Mention} owns {user.Money / 10000d}%\nWhich is ~{Math.Round(((user.Money * 100d) / (1000000d - buser.Money - suser.Money)), 2, MidpointRounding.ToEven)}% of the money in circulation");
+                await Context.Channel.SendMessageAsync($"{otherUser.Mention} owns {user.Money.ToYeedraDisplay()}%\nWhich is ~{Math.Round(((user.Money * 100d) / (1000000d - buser.Money - suser.Money)), 2, MidpointRounding.ToEven)}% of the money in circulation");
             }
         }
         [Command("bank"), Summary("Displays the percentage of total currency the bank owns.")]
@@ -897,7 +960,7 @@ namespace Kehyeedra3.Commands
                 user = Database.Users.FirstOrDefault(x => x.Id == 0);
                 suser = Database.Users.FirstOrDefault(x => x.Id == 1);
             }
-            await Context.Channel.SendMessageAsync($"Bank has {user.Money / 10000d}% left\nSkuld can currently sell a maximum of {suser.Money * 64}₩ at 0.0001% = 64₩ exchange rate");
+            await Context.Channel.SendMessageAsync($"Bank has {(suser.Money + user.Money).ToYeedraDisplay()}% left"/*\nSkuld can currently sell a maximum of {suser.Money * 64}₩ at 0.0001% = 64₩ exchange rate*/);
         }
         [Command("bet"), Summary("Gamble %coins in units of 0.0001%.")]
         public async Task Gamble(int wager)
@@ -937,12 +1000,12 @@ namespace Kehyeedra3.Commands
                         string result = "";
                         if ((wager - loss) > 0)
                         {
-                            result = $"Rolled: **{res1}** against **{res2}**\nResult: +{(wager - loss) / 10000d}%\nBalance: {user.Money / 10000d}%";
+                            result = $"Rolled: **{res1}** against **{res2}**\nResult: +{((long)(wager - loss)).ToYeedraDisplay()}%\nBalance: {user.Money.ToYeedraDisplay()}%";
                             await ReplyAsync($"{Context.User.Mention}\n{result}");
                         }
                         if ((wager - loss) < 0)
                         {
-                            result = $"Rolled: **{res1}** against **{res2}**\nResult: {(wager - loss) / 10000d}%\nBalance: {user.Money / 10000d}%";
+                            result = $"Rolled: **{res1}** against **{res2}**\nResult: {((long)(wager - loss)).ToYeedraDisplay()}%\nBalance: {user.Money.ToYeedraDisplay()}%";
                             await ReplyAsync($"{Context.User.Mention}\n{result}");
                         }
                     }
@@ -979,7 +1042,7 @@ namespace Kehyeedra3.Commands
                 for (int i = 0; i < 10; i++)
                 {
                     placing += 1;
-                    string percent = $"{ users[i].Money / 10000d }";
+                    string percent = $"{users[i].Money.ToYeedraDisplay()}";
                     string percentCirculating = $"{Math.Round(((users[i].Money * 100d) / (1000000d - bank.Money - skuld.Money)), 2, MidpointRounding.ToEven)}";
                     leaderboardMessage += $"\n**#{placing} : {users[i].Username}**\n{percent}% ~ *{percentCirculating}% circulating*";
                 }
@@ -1037,7 +1100,7 @@ namespace Kehyeedra3.Commands
                         {
                             if (pers.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), amount) && user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), -amount))
                             {
-                                await Context.Channel.SendMessageAsync($"{Context.User.Mention} **{amount / 10000d}%** has been transferred from your account.");
+                                await Context.Channel.SendMessageAsync($"{Context.User.Mention} **{((long)amount).ToYeedraDisplay()}%** has been transferred from your account.");
                             }
                             else
                             {
@@ -1152,7 +1215,7 @@ namespace Kehyeedra3.Commands
                         cawe = user.Lvl * 5d + 10d;
                     }
                     await Context.Channel.SendMessageAsync($"{Context.User.Mention}'s stats\nFishing level: **{user.Lvl}{pres}**\nMax catch weight: **{(user.Lvl * 5 + 2000d + user.Prestige*500d) / 100}kg**\nMin catch weight: **{cawe /100}kg**\n" +
-                        $"Fishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount})*\nBalance: **{muser.Money / 10000d}%**");
+                        $"Fishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount})*\nBalance: **{muser.Money.ToYeedraDisplay()}%**");
                 }
                 else
                 {
@@ -1170,7 +1233,7 @@ namespace Kehyeedra3.Commands
                         cawe = user.Lvl * 5d + 10d;
                     }
                     await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}{pres}**+P{user.Prestige}\nMax catch weight: **{(user.Lvl * 5 + 2000d + user.Prestige*500d) / 100}kg**\nMin catch weight: **{cawe / 100}kg**\n" +
-                        $"Fishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount}*)\nBalance: **{muser.Money / 10000d}%**");
+                        $"Fishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount}*)\nBalance: **{muser.Money.ToYeedraDisplay()}%**");
                 }
             }
         }

@@ -59,7 +59,7 @@ namespace Kehyeedra3.Commands
             await channel.SendMessageAsync(message);
         }
         [RequireRolePrecondition(AccessLevel.BotOwner)]
-        [Command("modifybot"), Summary("I'm goonaa mooodifoo")]
+        [Command("modifybot"), Summary("name")]
         public async Task ModifyBot(string _name)
         {
             //reference current bot user
@@ -118,7 +118,7 @@ namespace Kehyeedra3.Commands
             }
         }
         [RequireRolePrecondition(AccessLevel.BotOwner)]
-        [Command("modifymoney"), Alias("mm")]
+        [Command("modifymoney"), Alias("mm"),Summary("add / set")]
         public async Task ModMoney(string type, int amount, IUser target = null)
         {
             User user;
@@ -143,7 +143,7 @@ namespace Kehyeedra3.Commands
                         await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble");
                         return;
                     }
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSet **{yuser}**'s money to **{user.Money / 10000d}%**.");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSet **{yuser}**'s money to **{user.Money.ToYeedraDisplay()}%**.");
                     await Database.SaveChangesAsync();
                     return;
                 }
@@ -161,7 +161,7 @@ namespace Kehyeedra3.Commands
                             await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble.");
                             return;
                         }
-                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSet **{yuser}**'s money to **{amount / 10000d}%**.");
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSet **{yuser}**'s money to **{((long)amount).ToYeedraDisplay()}%**.");
                         await Database.SaveChangesAsync();
                         return;
                     }
@@ -174,25 +174,7 @@ namespace Kehyeedra3.Commands
             }
         }
 
-        //[Command("hello")]
-        //public async Task Hello(int a, int b)
-        //{
-        //    int x = a - b;
-        //    string message = "";
-        //    if (x < 0)
-        //    {
-        //        message += "The result is negative!";
-        //    }
-        //    else if (x > 0)
-        //    {
-        //        message += "The result is positive!";
-        //    }
-        //    else
-        //    {
-        //        message += "The result is 0!";
-        //    }
-        //    await Context.Channel.SendMessageAsync($"The result is {x}\n{message}");
-        //}
+
             // test commands
             //[Command("cbt", RunMode = RunMode.Async)]
             //public async Task CombatTest()
@@ -332,45 +314,5 @@ namespace Kehyeedra3.Commands
             //    }
             //}
 
-
-
-
-
-            //[RequireRolePrecondition(AccessLevel.BotOwner)]
-            //[Command("getstamp")]
-            //public async Task YeedraStamp()
-            //{
-            //    ulong stamp = DateTime.UtcNow.ToYeedraStamp();
-            //    await ReplyAsync($"{Context.User.Mention} {stamp}");
-            //}
-            //[RequireRolePrecondition(AccessLevel.BotOwner)]
-            //[Command("savefile")]
-
-            //public async Task SaveFile(string fday, string fscore)
-            //{
-            //    string location = Path.Combine(Environment.CurrentDirectory, "drawtasks");
-            //    string tlocation = ($"{location}/days.txt");
-            //    var attachments = Context.Message.Attachments;
-            //    string fname = $"{fday}-{fscore}";
-            //    if (File.Exists(location + "/days.txt"))
-            //        {
-
-            //        }
-            //    foreach (var item in attachments)
-            //    {
-            //        Uri link = new Uri(item.Url);
-            //        using (WebClient _webclient = new WebClient())
-            //        {
-            //            if (!Directory.Exists(location))
-            //                Directory.CreateDirectory(location);
-            //            location += ($"/{fday}-{fscore}.jpg");
-            //            _webclient.DownloadFileAsync(link, location);
-            //        }
-            //        await ReplyAsync($"Post archived");
-            //        break;
-            //    }
-            //}
-
-
-        }
+    }
 }
