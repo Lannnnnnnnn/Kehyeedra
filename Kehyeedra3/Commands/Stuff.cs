@@ -108,7 +108,6 @@ namespace Kehyeedra3.Commands
         {
             string remin = "";
             string refix = "";
-            string resuff = "";
             ulong sen = (d * 86400) + (h * 3600) + (m * 60);
             ulong yeedraStamp = DateTime.UtcNow.ToYeedraStamp();
 
@@ -156,50 +155,71 @@ namespace Kehyeedra3.Commands
             if (d == 0 && h == 0 && m == 0)
             {
                 refix += "right now";
-                resuff += " just now";
             }
             else
             {
                 refix += "in";
-                resuff += " ago";
             }
-
-            if (sen < 63072000)
+            if (sen != 0)
             {
-                var reminder = new Reminder
+                if (sen < 63072000)
                 {
-                    UserId = Context.User.Id,
-                    Message = $"**Reminder from{remin}{resuff}:**\n\n''{r}''",
-                    Created = yeedraStamp,
-                    Send = sen + yeedraStamp
-                };
+                    var reminder = new Reminder
+                    {
+                        UserId = Context.User.Id,
+                        Message = $"{r}",
+                        Created = yeedraStamp,
+                        Send = sen + yeedraStamp
+                    };
 
-                using (var Database = new ApplicationDbContextFactory().CreateDbContext())
-                {
-                    Database.Reminders.Add(reminder);
+                    using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+                    {
+                        Database.Reminders.Add(reminder);
 
-                    await Database.SaveChangesAsync().ConfigureAwait(false);
+                        await Database.SaveChangesAsync().ConfigureAwait(false);
+                    }
                 }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nAre you sure you need a reminder 2 years in the future..? \nAre you stupid?");
+                    return;
+                }
+
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nOk, I'll remind you {refix}{remin}.");
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n Are you sure you need a reminder 2 years in the future..? \nAre you stupid?");
-                return;
+                var dmchannel = await Bot._bot.GetUser(Context.User.Id).GetOrCreateDMChannelAsync();
+                await dmchannel.SendMessageAsync($"**You literally just told me to DM you:**\n\n{r}");
             }
-
-            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n Ok, I'll remind you {refix}{remin}.");
         }
 
-        [Command("dab"), Summary("Dabs a person")]
-        public async Task Dab(IGuildUser user = null)
+        [Command("reminders",RunMode = RunMode.Async), Summary("List reminders")]
+        public async Task ListReminders(string manage = null)
         {
-            if (user == null)
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                await Context.Channel.SendMessageAsync($"You put a dab of creamy sauce on your delicious, crunchy fishstick.\nYou have gained +5 calories.");
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync($"You give your good friend {user.Mention} a dab of creamy sauce to enjoy with their delicious, crunchy fishstick.\n{user.Mention} has gained +5 calories.");
+                string rlist = "";
+                var user = Context.User;
+                foreach (Reminder reminder in Database.Reminders)
+                {
+                    if (reminder.UserId == Context.User.Id)
+                    {
+                        rlist += $"ID: {reminder.Id} Made at: **GMT{reminder.Created.FromYeedraStamp()}**\n";
+                    }
+                }
+                if (manage == null)
+                {
+                    await Context.Channel.SendMessageAsync(rlist);
+                    return;
+                }
+                //else
+                //{
+                //    await Context.Channel.SendMessageAsync($"Which reminder would you like to edit?\n\n{rlist}");
+                //    var reply = await NextMessageAsync();
+                //    long rep = long.Parse(reply.Content);
+                //    if (rep ==)
+                //}
             }
         }
     }

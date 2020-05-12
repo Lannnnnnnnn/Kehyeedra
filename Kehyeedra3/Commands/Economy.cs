@@ -962,60 +962,7 @@ namespace Kehyeedra3.Commands
             }
             await Context.Channel.SendMessageAsync($"Bank has {(suser.Money + user.Money).ToYeedraDisplay()}% left"/*\nSkuld can currently sell a maximum of {suser.Money * 64}₩ at 0.0001% = 64₩ exchange rate*/);
         }
-        [Command("bet"), Summary("Gamble %coins in units of 0.0001%.")]
-        public async Task Gamble(int wager)
-        {
-            int res1 = SRandom.Next(0, 101);
-            int res2 = SRandom.Next(0, 101);
-            int loss = wager;
-
-            if (res1 > res2)
-            {
-                wager += wager;
-            }
-            else if (res1 < res2)
-            {
-                loss += wager;
-            }
-
-            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
-            {
-                var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
-                var buser = Database.Users.FirstOrDefault(x => x.Id == 0);
-                if (user == null || user.Money < loss)
-                {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n You can't afford that, go back to the mines.");
-                    return;
-                }
-                else
-                {
-                    if (buser.Money > 100)
-                    {
-                        if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), wager - loss))
-                        {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, gamble more and lose please.");
-                            return;
-                        }
-                        await Database.SaveChangesAsync();
-                        string result = "";
-                        if ((wager - loss) > 0)
-                        {
-                            result = $"Rolled: **{res1}** against **{res2}**\nResult: +{((long)(wager - loss)).ToYeedraDisplay()}%\nBalance: {user.Money.ToYeedraDisplay()}%";
-                            await ReplyAsync($"{Context.User.Mention}\n{result}");
-                        }
-                        if ((wager - loss) < 0)
-                        {
-                            result = $"Rolled: **{res1}** against **{res2}**\nResult: {((long)(wager - loss)).ToYeedraDisplay()}%\nBalance: {user.Money.ToYeedraDisplay()}%";
-                            await ReplyAsync($"{Context.User.Mention}\n{result}");
-                        }
-                    }
-                    else
-                    {
-                        await ReplyAsync($"{Context.User.Mention}\nHey, stop that.");
-                    }
-                }
-            }
-        }
+       
         [Command("leaderboard"), Alias("top", "lb"), Summary("Shows the top 10 people in a leaderboard, currently available leaderboards: 'f, fish', 'm, money'.")]
         public async Task Leaderboard(string type = null)
         {
