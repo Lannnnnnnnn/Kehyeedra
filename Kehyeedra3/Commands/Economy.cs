@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Kehyeedra3.Services.Models;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
@@ -596,7 +597,7 @@ namespace Kehyeedra3.Commands
 
             }
         }
-        [Command("inventory"), Alias("inv", "fishinv"), Summary("Shows the fish you have currently. Variables: fish tier")]
+        [Command("fishinventory"), Alias("finv", "fishinv"), Summary("Shows the fish you have currently. Variables: fish tier")]
         public async Task FishInventory(int? tier = null, IGuildUser user = null)
         {
             if (user == null)
@@ -761,6 +762,26 @@ namespace Kehyeedra3.Commands
             else
             {
                 await Context.Channel.SendMessageAsync("Go fish nigger").ConfigureAwait(false);
+            }
+        }
+        [Command("generalinventory"),Alias("ginv", "geninv"), Summary("Shows the items you have excluding fish.")]
+        public async Task GeneralInventory()
+        {
+            User user;
+            Dictionary<Items, int[]> inv = new Dictionary<Items, int[]>();
+            List<User.Item> items = User.ListItems();
+            User.Item item;
+            string message = "";
+            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
+            {
+                user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
+                inv = user.GetGenInve();
+                foreach (var entry in inv)
+                {
+                    item = items.FirstOrDefault(x => x.Id == entry.Key);
+                    message += $"**{item.Name}**: **{entry.Value[0]}**\n";
+                }
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n{message}");
             }
         }
         [Command("tradebuy", RunMode = RunMode.Async), Summary("Unfinished command")]
