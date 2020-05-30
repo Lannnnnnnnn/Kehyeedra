@@ -235,18 +235,19 @@ namespace Kehyeedra3.Commands
                 int rari = (SRandom.Next(0, 2001));
                 int weigh = SRandom.Next(10, 1501+prestige*500);
                 int tierRoll = SRandom.Next(0, 81+prestige*40);
-                int dCatchRoll = SRandom.Next(0, 1000+prestige*5);
+                int dCatchRoll = SRandom.Next(0, 1000+prestige*20);
                 int dcatch = 1;
                 ulong rarity;
                 int weight;
 
                 if (dCatchRoll > 1000)
                 {
-                    int many = 995;
-                    while (many+5 <= dCatchRoll)
+                    int many = 1020;
+                    dcatch += 1;
+                    while (many+20 < dCatchRoll)
                     {
                         dcatch += 1;
-                        many += 5;
+                        many += 10+(dcatch*5);
                     }
                 }
 
@@ -255,10 +256,15 @@ namespace Kehyeedra3.Commands
                     rarity = level * 10 + (ulong)rari;
                     weight = (int)level * 5 + weigh; 
                 }
+                else if (level < 100 && prestige == 1)
+                {
+                    rarity = 1000 + (ulong)rari;
+                    weight = (int)level * 2 + 500 + weigh;
+                }
                 else
                 {
                     rarity = 1000 + (ulong)rari;
-                    weight = 500 + weigh;
+                    weight = 700 + weigh;
                 }
 
                 Fish fish;
@@ -692,8 +698,20 @@ namespace Kehyeedra3.Commands
                     {
                         fishmote = fishes.FirstOrDefault(x => x.Id == entry.Key).Name;
                     }
-
-                    fishtext = $"{fishmote} [ **S**-{entry.Value[0]}  **M**-{entry.Value[1]}  **L**-{entry.Value[2]} ]\n";
+                    fishtext = $"{fishmote} [";
+                    if (entry.Value[0] > 0)
+                    {
+                        fishtext += $" **S**-{entry.Value[0]}";
+                    }
+                    if (entry.Value[1] > 0)
+                    {
+                        fishtext += $" **M**-{entry.Value[1]}";
+                    }
+                    if (entry.Value[2] > 0)
+                    {
+                        fishtext += $" **L**-{entry.Value[2]}";
+                    }
+                    fishtext += $" ]\n";
 
                     if (legfish.Any( f => f.Id == entry.Key))
                     {
@@ -1035,23 +1053,23 @@ namespace Kehyeedra3.Commands
                     var pers = Database.Users.FirstOrDefault(x => x.Id == person.Id);
                     if (user.Money < amount)
                     {
-                        await Context.Channel.SendMessageAsync($"{Context.User.Mention} You don't have that much money??");
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't have that much money??");
                     }
                     else
                     {
                         if (user.Id == person.Id)
                         {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention} You have transferred your money to yourself???");
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou have transferred your money to yourself???");
                         }
                         else
                         {
                             if (pers.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), amount) && user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), -amount))
                             {
-                                await Context.Channel.SendMessageAsync($"{Context.User.Mention} **{((long)amount).ToYeedraDisplay()}%** has been transferred from your account.");
+                                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**{((long)amount).ToYeedraDisplay()}%** has been transferred from your account.");
                             }
                             else
                             {
-                                await Context.Channel.SendMessageAsync($"{Context.User.Mention} You can't afford that, go back to the mines.");
+                                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou can't afford that, go back to the mines.");
                             }
                             await Database.SaveChangesAsync();
                         }
@@ -1060,7 +1078,7 @@ namespace Kehyeedra3.Commands
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"{Context.User.Mention} That's not how this works??");
+                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nNothing has been transferred from your account.\nGood job kiddo.");
             }
 
         }
@@ -1173,13 +1191,13 @@ namespace Kehyeedra3.Commands
                     if (user.Prestige > 0)
                     {
                         pres = $" +{user.Prestige}P";
-                        cawe = 510;
+                        cawe = 500;
                     }
                     else
                     {
                         cawe = user.Lvl * 5d + 10d;
                     }
-                    await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}{pres}**+P{user.Prestige}\nMax catch weight: **{(user.Lvl * 5 + 2000d + user.Prestige*500d) / 100}kg**\nMin catch weight: **{cawe / 100}kg**\n" +
+                    await Context.Channel.SendMessageAsync($"{otherUser.Mention}'s stats\nFishing level: **{user.Lvl}{pres}**\nMax catch weight: **{(user.Lvl * 5 + 2000d + user.Prestige*500d) / 100}kg**\nMin catch weight: **{cawe / 100}kg**\n" +
                         $"Fishing xp: **{user.TXp}**\nTotal fish: **{scount + mcount + lcount}** *(Large: {lcount} Medium: {mcount} Small: {scount}*)\nBalance: **{muser.Money.ToYeedraDisplay()}%**");
                 }
             }
@@ -1251,13 +1269,13 @@ namespace Kehyeedra3.Commands
                 }
             }
         }
-        [Command("xptolevel"),Alias("tolv", "xpto"),Summary("Displays how much xp you need to reach the given level.")]
-        public async Task XpToNextLevl(ulong lvl, string xp = null)
+        [Command("xptolevel"),Alias("tolv", "xpto"),Summary("Displays how much xp you need to reach the given level / amount of xp.")]
+        public async Task XpToNextLevl(ulong lvl, IUser otheruser = null)
         {
             ulong lvlXp = 50;
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
-                if (lvl > 1 && lvl <= 200 && xp == null)
+                if (lvl > 1 && lvl <= 200)
                 {
                     for (ulong i = 1; i < lvl; i++)
                     {
@@ -1276,61 +1294,37 @@ namespace Kehyeedra3.Commands
                     await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nThat's not really possible?");
                     return;
                 }
-                else if (lvl > 200 && xp == null)
+                else if (lvl > 200)
                 {
                     await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n**Lvl 200** is the maximum lvl");
                     return;
                 }
                 
                 var user = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
-                if (xp != null && xp == "xp")
+
+                if (user == null)
                 {
-                    if (user == null)
                     {
-                        {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\n???");
-                        }
-                    }
-                    else
-                    {
-                        if (user.TXp >= lvl)
-                        {
-                            await Context.Channel.SendMessageAsync($"XP since you reached **{lvl}xp : {user.TXp - lvl}**" +
-                                                                   $"\nCurrent XP : **{user.TXp}**");
-                        }
-                        else
-                        {
-                            await Context.Channel.SendMessageAsync($"XP left until **{lvl}xp : {lvl - user.TXp}**" +
-                                                                   $"\nCurrent XP : **{user.TXp}**" +
-                                                                   $"\nProgress to goal : **~{Math.Round(((user.TXp * 100d) / lvl), 0, MidpointRounding.ToEven)}%**");
-                        }
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**");
                     }
                 }
                 else
                 {
-                    if (user == null)
+                    if (user.Lvl >= lvl)
                     {
-                        {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**");
-                        }
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
+                                                                $"\nXP since you reached **Lvl {lvl} : {user.TXp - lvlXp}**" +
+                                                                $"\nCurrent XP : **{user.TXp}**");
                     }
                     else
                     {
-                        if (user.Lvl >= lvl)
-                        {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
-                                                                   $"\nXP since you reached **Lvl {lvl} : {user.TXp - lvlXp}**" +
-                                                                   $"\nCurrent XP : **{user.TXp}**");
-                        }
-                        else
-                        {
-                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
-                                                                   $"\nXP left until **Lvl {lvl} : {lvlXp - user.TXp}**" +
-                                                                   $"\nCurrent XP : **{user.TXp}**" +
-                                                                   $"\nProgress to goal : **~{Math.Round(((user.TXp * 100d) / lvlXp), 0, MidpointRounding.ToEven)}%**");
-                        }
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nXP required for **Lvl {lvl} : {lvlXp}**" +
+                                                                $"\nXP left until **Lvl {lvl} : {lvlXp - user.TXp}**" +
+                                                                $"\nCurrent XP : **{user.TXp}**" +
+                                                                $"\nProgress to goal : **~{Math.Round(((user.TXp * 100d) / lvlXp), 0, MidpointRounding.ToEven)}%**");
                     }
                 }
+                
             }
         }
     }

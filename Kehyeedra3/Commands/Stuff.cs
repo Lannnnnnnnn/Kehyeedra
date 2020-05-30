@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Kehyeedra3.Services.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System;
 using System.Collections.Generic;
@@ -197,29 +198,128 @@ namespace Kehyeedra3.Commands
         [Command("reminders",RunMode = RunMode.Async), Summary("List reminders")]
         public async Task ListReminders(string manage = null)
         {
+            ulong d = 0;
+            ulong h = 0;
+            ulong m = 0;
+            string when = "";
+            string remin = "";
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 string rlist = "";
                 var user = Context.User;
+                
                 foreach (Reminder reminder in Database.Reminders)
                 {
+                    ulong yeedraStamp = DateTime.UtcNow.ToYeedraStamp();
+                    remin = "";
+                    ulong ago = yeedraStamp - reminder.Created;
+                    while (ago > 59)
+                    {
+                        m += 1;
+                        ago -= 60;
+                    }
+                    while (m > 59)
+                    {
+                        h += 1;
+                        m -= 60;
+                    }
+                    while (h > 23)
+                    {
+                        d += 1;
+                        h -= 24;
+                    }
+
+                    if (d > 0)
+                    {
+                        remin += $" {d} day";
+                        if (d > 1)
+                        {
+                            remin += $"s";
+                        }
+                    }
+                    if (h > 0)
+                    {
+                        remin += $" {h} hour";
+                        if (h > 1)
+                        {
+                            remin += $"s";
+                        }
+                    }
+                    if (m > 0)
+                    {
+                        remin += $" {m} minute";
+                        if (m > 1)
+                        {
+                            remin += $"s";
+                        }
+                    }
+                    if (d == 0 && h == 0 && m == 0)
+                    {
+                        when = " less than a minute ago.";
+                    }
+                    else
+                    {
+                        when = $"{remin} ago.";
+                    }
+
+                    m = 0;
+                    h = 0;
+                    d = 0;
+
                     if (reminder.UserId == Context.User.Id)
                     {
-                        rlist += $"ID: {reminder.Id} Made at: **GMT{reminder.Created.FromYeedraStamp()}**\n";
+                        rlist += $"Reminder ID: {reminder.Id} From{when} Contents: *{reminder.Message}*\n";
                     }
+                }
+                if (rlist == "")
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou haven't set any reminders.");
+                    return;
                 }
                 if (manage == null)
                 {
                     await Context.Channel.SendMessageAsync(rlist);
                     return;
                 }
-                //else
-                //{
-                //    await Context.Channel.SendMessageAsync($"Which reminder would you like to edit?\n\n{rlist}");
-                //    var reply = await NextMessageAsync();
-                //    long rep = long.Parse(reply.Content);
-                //    if (rep ==)
-                //}
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nWhich reminder would you like to edit?\n\n{rlist}");
+                    var reply = await NextMessageAsync();
+                    ulong rep = ulong.Parse(reply.Content);
+
+                    var rem = Database.Reminders.FirstOrDefault(r => r.Id == rep && r.UserId == Context.User.Id);
+
+                    if (rem == null)
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou have no such reminder.");
+                        return;
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nWhat would you like to do? (edit/remove)");
+
+                        reply = await NextMessageAsync();
+
+                        if (reply.Content == "edit")
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInsert new reminder message.");
+                            reply = await NextMessageAsync();
+                            rem.Message = reply.Content;
+                            await Database.SaveChangesAsync();
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nReminder updated.");
+                        }
+                        else if (reply.Content == "remove")
+                        {
+                            Database.Reminders.Remove(rem);
+                            await Database.SaveChangesAsync();
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nReminder removed.");
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nInvalid action.");
+                        }
+                    }
+                }
             }
         }
     }

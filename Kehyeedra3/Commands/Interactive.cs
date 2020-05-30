@@ -6,6 +6,7 @@ using Kehyeedra3.Services.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
+using System.IO.Enumeration;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
@@ -349,68 +350,357 @@ namespace Kehyeedra3.Commands
 
             }
         }
-        [RequireRolePrecondition(AccessLevel.BotOwner)]
+
         [Command("gstore", RunMode = RunMode.Async),Alias("gs")]
         public async Task GeneralStore(string input = null)
         {
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
+                Dictionary<Items, int[]> items = new Dictionary<Items, int[]>();
+                Dictionary<FishSpecies, int[]> fishinv = new Dictionary<FishSpecies, int[]>();
+                List<User.Item> itemlist = User.ListItems();
+                List<Fish> fishes = Fishing.GetFishList();
+
+                User.Item item;
+                Fish fish;
+
                 var fuser = Database.Fishing.FirstOrDefault(x => x.Id == Context.User.Id);
                 var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
-                var inv = fuser.GetInventory();
+
+                if (fuser == null)
+                {
+                    fuser = new Fishing
+                    {
+                        Id = user.Id
+                    };
+
+                    Database.Fishing.Add(fuser);
+                    await Database.SaveChangesAsync();
+                }
+                else
+                {
+                    fishinv = fuser.GetInventory();
+                }
+
+                if (user.GeneralInventory == null || user.GeneralInventory.Length < 3 )
+                {
+                    user.GeneralInventory = "{}";
+                    await Database.SaveChangesAsync();
+                }
+
+                string itemtxt = "";
+
+                foreach (User.Item i in itemlist)
+                {
+                    itemtxt += $"{(int)i.Id} : {i.Name} for {((long)i.Price).ToYeedraDisplay()}%\n";
+                }
+
                 if (input != null)
                 {
                     input = input.ToLowerInvariant();
                 }
+
                 if (input == null)
                 {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nHere's a list of available items.");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nPlease specify 'b / buy' to buy items, or 's / sell' to sell items.");
                 }
                 else if (input == "b" || input == "buy")
                 {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the item.");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the item.\n{itemtxt}");
                     var inp = await NextMessageAsync();
-                    switch (Convert.ToInt32(inp))
+
+                    item = itemlist.FirstOrDefault(i => (int)i.Id == int.Parse(inp.Content));
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the amount.");
+                    inp = await NextMessageAsync();
+
+                    items = user.GetGenInve();
+
+                    int[] amount = { 0 };
+                    
+                    if (!items.TryGetValue(item.Id, out amount))
                     {
-                        case 1:
-                            {
-                                
-                            }
-                            break;
-                        case 2:
-                            {
-                                
-                            }
-                            break;
-                        case 3:
-                            {
-
-                            }
-                            break;
-                        case 4:
-                            {
-
-                            }
-                            break;
-                        case 5:
-                            {
-
-                            }
-                            break;
+                        amount = new int[] { 0 };
+                        items.Add(item.Id, amount);
                     }
 
+                    if (int.Parse(inp.Content) * item.Price <= user.Money)
+                    {
+                        amount[0] += int.Parse(inp.Content);
+
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nThis will cost you {ulong.Parse(inp.Content) * (ulong)item.Price}.\nType 'ok' to confirm.");
+                        inp = await NextMessageAsync();
+                        if (inp.Content.ToLowerInvariant() == "ok")
+                        {
+                            if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), -(amount[0] * item.Price)))
+                            {
+                                await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble.");
+                                return;
+                            }
+                            user.SetGenInve(items);
+                            await Database.SaveChangesAsync();
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBought {int.Parse(inp.Content)} of {item.Name}.");
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nPlease come back when you feel like spending.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nCome back when you're a little, MMMMMMmmmm, richer.");
+                    }
                 }
                 else if (input == "s" || input == "sell")
                 {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the item.");
-
+                    int value = 0;
+                    FishSize size;
+                    if (fuser.Inventory.Length < 3)
+                    {
+                        await Context.Channel.SendMessageAsync($"Your inventory is empty. Try fishing more.");
+                        return;
+                    }
+                    
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the tier.\n");
                     var inp = await NextMessageAsync();
+                    int tier = int.Parse(inp.Content);
+                    
+                    List<Fish> legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Legendary).ToList();
+                    List<Fish> rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Rare).ToList();
+                    List<Fish> uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Uncommon).ToList();
+                    List<Fish> comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.Common).ToList();
+                    if (tier > 1 && tier < 5)
+                    {
+                        switch (tier)
+                        {
+                            case 2:
+                                {
+                                    legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Legendary).ToList();
+                                    rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Rare).ToList();
+                                    uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Uncommon).ToList();
+                                    comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T2Common).ToList();
+                                }
+                                break;
+                            case 3:
+                                {
+                                    legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Legendary).ToList();
+                                    rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Rare).ToList();
+                                    uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Uncommon).ToList();
+                                    comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T3Common).ToList();
+                                }
+                                break;
+                            case 4:
+                                {
+                                    legfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Legendary).ToList();
+                                    rarfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Rare).ToList();
+                                    uncfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Uncommon).ToList();
+                                    comfish = fishes.Where(f => (int)f.Rarity == (int)FishRarity.T4Common).ToList();
+                                }
+                                break;
+                        }
+                    }
+                    else if (tier < 1 || tier > 4)
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nTier not available.");
+                        return;
+                    }
 
+                    string legendary = "";
+                    string rare = "";
+                    string uncommon = "";
+                    string common = "";
+                    string fishtext = "";
+
+                    foreach (var entry in fishinv)
+                    {
+                        fishtext = $"{(int)entry.Key} : {entry.Key} [";
+                        if (entry.Value[0] > 0)
+                        {
+                            fishtext += $" **S**-{entry.Value[0]}";
+                        }
+                        if (entry.Value[1] > 0)
+                        {
+                            fishtext += $" **M**-{entry.Value[1]}";
+                        }
+                        if (entry.Value[2] > 0)
+                        {
+                            fishtext += $" **L**-{entry.Value[2]}";
+                        }
+                        fishtext += $" ]\n";
+
+                        if (legfish.Any(f => f.Id == entry.Key))
+                        {
+                            legendary += $"{fishtext}";
+                        }
+                        if (rarfish.Any(f => f.Id == entry.Key))
+                        {
+                            rare += $"{fishtext}";
+                        }
+                        if (uncfish.Any(f => f.Id == entry.Key))
+                        {
+                            uncommon += $"{fishtext}";
+                        }
+                        if (comfish.Any(f => f.Id == entry.Key))
+                        {
+                            common += $"{fishtext}";
+                        }
+                    }
+                    
+                    string locker = "";
+                    if (legendary != "")
+                    {
+                        locker += $"{legendary}\n";
+                    }
+                    if (rare != "")
+                    {
+                        locker += $"{rare}\n";
+                    }
+                    if (uncommon != "")
+                    {
+                        locker += $"{uncommon}\n";
+                    }
+                    locker += $"{common}";
+                    if (locker == "")
+                    {
+                        await Context.Channel.SendMessageAsync($"You don't have anything to sell in this tier.");
+                        return;
+                    }
+
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the item.\n\n{locker}");
+                    inp = await NextMessageAsync();
+                    fish = fishes.FirstOrDefault(i => (int)i.Id == int.Parse(inp.Content));
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the size. 0 = small, 1 = medium, 2 = large\n");
+                    inp = await NextMessageAsync();
+                    size = (FishSize)int.Parse(inp.Content);
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nSpecify the amount.\n");
+                    inp = await NextMessageAsync();
+                    int amount = int.Parse(inp.Content);
+                    int amountcheck = fishinv.FirstOrDefault(f => f.Key == fish.Id).Value[(int)size];
+                    if (amountcheck < amount)
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't have that many.\n");
+                        return;
+                    }
+
+                    switch (fish.Rarity)
+                    {
+                        case FishRarity.Legendary:
+                            {
+                                value = 700;
+                            }
+                            break;
+                        case FishRarity.Rare:
+                            {
+                                value = 6 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.Uncommon:
+                            {
+                                value = 2 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.Common:
+                            {
+                                value = (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T2Legendary:
+                            {
+                                value = 750;
+                            }
+                            break;
+                        case FishRarity.T2Rare:
+                            {
+                                value = 12 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T2Uncommon:
+                            {
+                                value = 4 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T2Common:
+                            {
+                                value = 2 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T3Legendary:
+                            {
+                                value = 800;
+                            }
+                            break;
+                        case FishRarity.T3Rare:
+                            {
+                                value = 18 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T3Uncommon:
+                            {
+                                value = 6 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T3Common:
+                            {
+                                value = 3 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T4Legendary:
+                            {
+                                value = 850;
+                            }
+                            break;
+                        case FishRarity.T4Rare:
+                            {
+                                value = 32 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T4Uncommon:
+                            {
+                                value = 8 * (int)(size+1);
+                            }
+                            break;
+                        case FishRarity.T4Common:
+                            {
+                                value = 4 * (int)(size+1);
+                            }
+                            break;
+                    }
+                    value *= amount;
+
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou're about to sell **{amount} {fish.Name}** for **{((long)value).ToYeedraDisplay()}**.\nType 'ok' to confirm.");
+                    inp = await NextMessageAsync();
+                    if (inp.Content.ToLowerInvariant() == "ok")
+                    {
+
+                        int[] amounts;
+                        if (!fishinv.TryGetValue(fish.Id, out amounts))
+                        {
+                            amounts = new int[] { 0, 0, 0 };
+                            fishinv.Add(fish.Id, amounts);
+                        }
+
+                        int sizeIndex = (int)size;
+                        amounts[sizeIndex] -= amount;
+
+                        fuser.SetInventory(fishinv);
+
+                        if (!user.GrantMoney(Database.Users.FirstOrDefault(x => x.Id == 0), value))
+                        {
+                            await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble.");
+                            return;
+                        }
+                        await Database.SaveChangesAsync();
+
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nThanks, seaman, enjoy your moolah.");
+                        
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nI guess I'm starving tonight. :[");
+                    }
                 }
             }
-            
-
         }
+
         [RequireRolePrecondition(AccessLevel.BotOwner)]
         [Command("setbf")]
         public async Task SetBattleFish(byte type, IUser usar = null)

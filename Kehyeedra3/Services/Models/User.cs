@@ -30,27 +30,43 @@ namespace Kehyeedra3.Services.Models
             return false;
         }
 
-        public void SetGenInv(List<Item> newInv)
+        //public void SetGenInv(List<Item> newInv)
+        //{
+        //    GeneralInventory = JsonConvert.SerializeObject(newInv);
+        //}
+        //public List<Item> GetGenInv()
+        //{
+        //    if (string.IsNullOrEmpty(GeneralInventory))
+        //    {
+        //        return new List<Item>();
+        //    }
+        //    return JsonConvert.DeserializeObject<List<Item>>(GeneralInventory);
+        //}
+
+        public Dictionary<Items, int[]> GetGenInve()
         {
-            GeneralInventory = JsonConvert.SerializeObject(newInv);
+            return JsonConvert.DeserializeObject<Dictionary<Items, int[]>>(GeneralInventory);
         }
-        public List<Item> GetGenInv()
+
+        public void SetGenInve(Dictionary<Items, int[]> inv)
         {
-            return JsonConvert.DeserializeObject<List<Item>>(GeneralInventory);
+            Dictionary<int, int[]> temp = new Dictionary<int, int[]>();
+            foreach (var entry in inv)
+            {
+                temp.Add((int)entry.Key, entry.Value);
+            }
+            GeneralInventory = JsonConvert.SerializeObject(temp);
         }
+
         public static List<Item> ListItems()
         {
             return new List<Item>
             {
                 new Item()
                 {
-                    Id = Items.Item1,
-                    Name = "Item1"
-                },
-                new Item()
-                {
-                    Id = Items.Item2,
-                    Name = "Item1"
+                    Id = Items.DirtyBoot,
+                    Name = "Lan's Love",
+                    Price = 100
                 },
             };
         }
@@ -58,6 +74,7 @@ namespace Kehyeedra3.Services.Models
         {
             public Items Id { get; set; }
             public string Name { get; set; }
+            public int Price { get; set; }
         }
         public class BattleFishObject
         {
@@ -72,8 +89,7 @@ namespace Kehyeedra3.Services.Models
     }
     public enum Items
     {
-        Item1 = 0,
-        Item2 = 1,
+        DirtyBoot = 0,
     }
     public class ItemSlot
     {

@@ -105,8 +105,7 @@ namespace Kehyeedra3.Commands
                         {
                             coommands.Append(cmd.Name);
 
-                            if (cmd != module.Commands.LastOrDefault())
-                                coommands.Append(", ");
+                            if (cmd != module.Commands.LastOrDefault()) coommands.Append(", ");
                         }
                     }
                     embed.AddField(module.Name, coommands.ToString());
