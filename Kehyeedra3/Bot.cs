@@ -18,6 +18,7 @@ namespace Kehyeedra3
     public class Bot
     {
         /// Star Vars
+        public static bool IsReady { get; private set; }
         public static DiscordSocketClient _bot;
         public static System.Timers.Timer Clockboy;
         public static AudioService AudioService;
@@ -140,6 +141,7 @@ namespace Kehyeedra3
         {
             try
             {
+				_bot.Ready += _bot_Ready;
                 await _bot.LoginAsync(TokenType.Bot, Configuration.Load().Token);
                 await _bot.StartAsync();
                 Clockboy.Start();
@@ -162,7 +164,12 @@ namespace Kehyeedra3
             }
         }
 
-        public static void EnsureConfigExists()
+		private async Task _bot_Ready()
+		{
+            IsReady = true;
+		}
+
+		public static void EnsureConfigExists()
         {
             string storage = Environment.CurrentDirectory;
             if (!Directory.Exists(Path.Combine(storage, "storage")))

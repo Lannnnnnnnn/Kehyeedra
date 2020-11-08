@@ -3,14 +3,16 @@ using System;
 using Kehyeedra3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kehyeedra3.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200531193428_oofboof")]
+    partial class oofboof
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,9 +165,6 @@ namespace Kehyeedra3.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("CurrentBattlefish")
-                        .HasColumnType("int");
-
                     b.Property<string>("GeneralInventory")
                         .HasColumnType("LONGTEXT");
 
@@ -189,8 +188,8 @@ namespace Kehyeedra3.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<int>("FishType")
-                        .HasColumnType("int");
+                    b.Property<byte>("FishType")
+                        .HasColumnType("tinyint unsigned");
 
                     b.Property<int>("Lvl")
                         .HasColumnType("int");

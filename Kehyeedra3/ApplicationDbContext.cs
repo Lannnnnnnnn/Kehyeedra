@@ -12,5 +12,6 @@ namespace Kehyeedra3
         public DbSet<Reminder> Reminders { get; set; }
         public DbSet<Fishing> Fishing { get; set; }
         public DbSet<StoreFront> StoreFronts { get; set; }
+        public DbSet<User.BattleFishObject> Battlefish { get; set; }
     }
 }

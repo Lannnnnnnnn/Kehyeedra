@@ -3,14 +3,16 @@ using System;
 using Kehyeedra3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kehyeedra3.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200531192223_boofboof")]
+    partial class boofboof
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,9 +165,6 @@ namespace Kehyeedra3.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("CurrentBattlefish")
-                        .HasColumnType("int");
-
                     b.Property<string>("GeneralInventory")
                         .HasColumnType("LONGTEXT");
 
@@ -189,8 +188,8 @@ namespace Kehyeedra3.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<int>("FishType")
-                        .HasColumnType("int");
+                    b.Property<byte>("FishType")
+                        .HasColumnType("tinyint unsigned");
 
                     b.Property<int>("Lvl")
                         .HasColumnType("int");
@@ -201,7 +200,7 @@ namespace Kehyeedra3.Migrations
                     b.Property<ulong>("NextXp")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong>("UserId")
+                    b.Property<ulong?>("UserId")
                         .HasColumnType("bigint unsigned");
 
                     b.Property<ulong>("Xp")
@@ -209,7 +208,9 @@ namespace Kehyeedra3.Migrations
 
                     b.HasKey("FishId");
 
-                    b.ToTable("Battlefish");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BattleFishObject");
                 });
 
             modelBuilder.Entity("Kehyeedra3.Services.Models.ItemOffer", b =>
@@ -224,6 +225,13 @@ namespace Kehyeedra3.Migrations
                     b.HasOne("Kehyeedra3.Services.Models.StoreFront", null)
                         .WithMany("Items")
                         .HasForeignKey("StoreFrontId");
+                });
+
+            modelBuilder.Entity("Kehyeedra3.Services.Models.User+BattleFishObject", b =>
+                {
+                    b.HasOne("Kehyeedra3.Services.Models.User", null)
+                        .WithMany("BattleFish")
+                        .HasForeignKey("UserId");
                 });
 #pragma warning restore 612, 618
         }

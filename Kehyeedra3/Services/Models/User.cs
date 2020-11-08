@@ -15,7 +15,9 @@ namespace Kehyeedra3.Services.Models
         public ulong LastMine { get; set; } = 0;
         [Column(TypeName = "LONGTEXT")]
         public string GeneralInventory { get; set; } = "{}";
-        public ICollection<BattleFishObject> BattleFish { get; set; }
+        [Column(TypeName = "TINYINT")]
+        public BattleFish CurrentBattlefish { get; set; } = 0;
+      
 
 
         public bool GrantMoney(User bank, long amount)
@@ -30,18 +32,6 @@ namespace Kehyeedra3.Services.Models
             return false;
         }
 
-        //public void SetGenInv(List<Item> newInv)
-        //{
-        //    GeneralInventory = JsonConvert.SerializeObject(newInv);
-        //}
-        //public List<Item> GetGenInv()
-        //{
-        //    if (string.IsNullOrEmpty(GeneralInventory))
-        //    {
-        //        return new List<Item>();
-        //    }
-        //    return JsonConvert.DeserializeObject<List<Item>>(GeneralInventory);
-        //}
 
         public Dictionary<Items, int[]> GetGenInve()
         {
@@ -68,6 +58,12 @@ namespace Kehyeedra3.Services.Models
                     Name = "Lan's Love",
                     Price = 100
                 },
+                new Item()
+                {
+                    Id = Items.Lettuce,
+                    Name = "Lettuce",
+                    Price = 50
+                }
             };
         }
         public class Item
@@ -76,20 +72,33 @@ namespace Kehyeedra3.Services.Models
             public string Name { get; set; }
             public int Price { get; set; }
         }
+
         public class BattleFishObject
         {
             [Key]
             public ulong FishId { get; set; }
-            public byte FishType { get; set; } = 0;
+            [Required]
+            public ulong UserId { get; set; }
+            [Column(TypeName = "TINYINT")]
+            public BattleFish FishType { get; set; } = 0;
             public ulong Xp { get; set; } = 0;
             public ulong NextXp { get; set; } = 50;
             public int Lvl { get; set; } = 0;
             public string Name { get; set; } = "Unnamed";
         }
     }
+    public enum BattleFish
+    {
+        None = 0,
+        Herring = 1,
+        Birgus = 2,
+        Abama = 3,
+        Pistashrimp = 4
+    }
     public enum Items
     {
         DirtyBoot = 0,
+        Lettuce = 1
     }
     public class ItemSlot
     {

@@ -3,12 +3,15 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Kehyeedra3.Preconditions;
 using Kehyeedra3.Services.Models;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO.Enumeration;
 using System.IO.IsolatedStorage;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -23,34 +26,169 @@ namespace Kehyeedra3.Commands
             ""
         };
 
-        [RequireRolePrecondition(AccessLevel.BotOwner)]
         [Command("battlefish", RunMode = RunMode.Async),Alias("bf"),Summary("Type **bf help** or **bf h** for help with this command.")]
         public async Task BattleFish(string option = null, [Remainder]string sec = null)
         {
             using (var Database = new ApplicationDbContextFactory().CreateDbContext())
             {
                 var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id);
-                if (user.BattleFish.Any() == false)
+                var userfish = Database.Battlefish.Where(x => x.UserId == Context.User.Id);
+
+                int attb = 0;
+                int defb = 0;
+                int hpb = 0;
+                int apb = 0;
+                int dgb = 0;
+
+                if (!userfish.Any() && option == null)
                 {
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't have a battlefish.");
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't have any battlefish.");
                     return;
                 }
+                else
+                {
+                    var fish = userfish.FirstOrDefault(x => x.FishType == user.CurrentBattlefish);
+                    if (fish == null)
+                    {
+                        fish = userfish.FirstOrDefault();
+                    }
+                    switch (fish.FishType)
+                    {
+                        case Services.Models.BattleFish.Herring:
+                            {
+                                attb = 9;
+                                defb = 9;
+                                hpb = 9;
+                                apb = 3;
+                                dgb = 2;
+                            }
+                            break;
+                        case Services.Models.BattleFish.Birgus:
+                            {
+                                attb = 10;
+                                defb = 6;
+                                hpb = 5;
+                                apb = 9;
+                                dgb = 4;
+                            }
+                            break;
+                        case Services.Models.BattleFish.Abama:
+                            {
+                                attb = 4;
+                                defb = 3;
+                                hpb = 5;
+                                apb = 18;
+                                dgb = 8;
+                            }
+                            break;
+                        case Services.Models.BattleFish.Pistashrimp:
+                            {
+                                attb = 15;
+                                defb = 4;
+                                hpb = 5;
+                                apb = 6;
+                                dgb = 6;
+                            }
+                            break;
+                    }
+                }
 
-                var fish = user.BattleFish.FirstOrDefault();
 
-                string species = $"";
-                string attacks = $"";
-                int att = 0;
-                int def = 0;
-                int dg = 0;
-                int hp = 0;
-                int ap = 0;
+                string opt = "";
 
-                double lvm = 20;
-                double lvmhp = 100;
+                BattleFish type = 0;
+                if (option != null)
+                {
+                    opt = option.ToLowerInvariant();
+                }
+                
+                string bfishlist = "";
+
+                if (opt == "change" || opt == "c")
+                {
+                    string bfishlistname = "";
+                    foreach (var fesh in userfish)
+                    {
+                        string prefix = "Hatchling";
+                        string suffix = "";
+
+                        if (fesh.Lvl >= 15)
+                        {
+                            prefix = "Young";
+                        }
+                        if (fesh.Lvl >= 30)
+                        {
+                            prefix = "Adolescent";
+                        }
+                        if (fesh.Lvl >= 50)
+                        {
+                            prefix = "Adult";
+                        }
+
+                        switch ((int)fesh.FishType)
+                        {
+                            case 1:
+                                {
+                                    if (fesh.Lvl >= 100)
+                                    {
+                                        bfishlistname += $"ton";
+                                        suffix = $"Authentic Masculine";
+                                    }
+                                    bfishlistname = $"{prefix} Herring{suffix}";
+                                }
+                                break;
+                            case 2:
+                                {
+                                    if (fesh.Lvl >= 100)
+                                    {
+                                        prefix = $"Great Sage";
+                                    }
+                                    bfishlistname = $"{prefix} Birgus";
+                                }
+                                break;
+                            case 3:
+                                {
+                                    if (fesh.Lvl >= 100)
+                                    {
+                                        prefix = $"President";
+                                    }
+                                    bfishlistname = $"{prefix} Abama";
+                                }
+                                break;
+                            case 4:
+                                {
+                                    if (fesh.Lvl >= 100)
+                                    {
+                                        suffix += $" XTREME";
+                                        prefix = $"Hardboiled";
+                                    }
+                                    bfishlistname = $"{prefix} Pistashrimp{suffix}";
+                                }
+                                break;
+                        }
+                        bfishlist += $"{(byte)fesh.FishType} : LVL {fesh.Lvl} {bfishlistname}\n";
+                        
+                    }
+
+                }
 
                 if (option == null)
                 {
+                    var fish = userfish.FirstOrDefault(x => x.FishType == user.CurrentBattlefish);
+                    if (fish == null)
+                    {
+                        fish = userfish.FirstOrDefault();
+                    }
+
+                    StringBuilder message = new StringBuilder($"{Context.User.Mention}\n");
+
+                    string species = $"";
+                    string attacks = $"";
+
+                    double lvm = 20;
+                    double lvmhp = 100;
+                    int lvdf = 5;
+
                     for (int i = 0; i < fish.Lvl; i++)
                     {
                         lvm += Math.Round((Convert.ToDouble(lvm) * 0.01d), 0, MidpointRounding.ToEven) + 5;
@@ -58,6 +196,13 @@ namespace Kehyeedra3.Commands
                     }
                     int lvlm = Convert.ToInt32(lvm) / 10;
                     int lvlmhp = Convert.ToInt32(lvmhp) / 10;
+
+                    int att = lvlm * attb;
+                    int def = lvdf * defb;
+                    int hp = lvlmhp * hpb;
+                    int ap = lvlmhp * apb;
+                    int dg = lvlm * dgb;                    
+
                     string prefix = "Hatchling";
 
                     if (fish.Lvl >= 15)
@@ -72,7 +217,7 @@ namespace Kehyeedra3.Commands
                     {
                         prefix = "Adult";
                     }
-                    switch (fish.FishType)
+                    switch ((int)fish.FishType)
                     {
                         case 0:
                             {
@@ -106,12 +251,6 @@ namespace Kehyeedra3.Commands
                                     attacks += $"\n5 : **Fairy Nightmare** - {species} executes a devastating ultimate attack.";
                                 }
 
-                                att = 9 * lvlm;
-                                def = 9 * lvlm;
-                                hp = 9 * lvlmhp;
-                                ap = 3 * lvlmhp;
-
-                                dg = 2 * lvlm;
                             }
                             break;
                         case 2:
@@ -141,12 +280,6 @@ namespace Kehyeedra3.Commands
                                     attacks += $"\n5 : **Ecletic Rift** - {species} summons portals to alternate dimensions to call forth an army of raving crabs.";
                                 }
 
-                                att = 10 * lvlm;
-                                def = 6 * lvlm;
-                                hp = 5 * lvlmhp;
-                                ap = 9 * lvlmhp;
-
-                                dg = 4 * lvlm;
                             }
                             break;
                         case 3:
@@ -176,12 +309,6 @@ namespace Kehyeedra3.Commands
                                     attacks += $"\n5 : **Ancestral Wrath** - {species} calls into the depths to unleash its true potential.";
                                 }
 
-                                att = 4 * lvlm;
-                                def = 3 * lvlm;
-                                hp = 5 * lvlmhp;
-                                ap = 18 * lvlmhp;
-
-                                dg = 8 * lvlm;
                             }
                             break;
                         case 4:
@@ -211,20 +338,27 @@ namespace Kehyeedra3.Commands
                                     attacks += $"\n5 : **Dual Jet** - {species} vaporizes the surrounding with its machine gun claws.";
                                 }
 
-                                att = 15 * lvlm;
-                                def = 4 * lvlm;
-                                hp = 5 * lvlmhp;
-                                ap = 6 * lvlmhp;
-
-                                dg = 6 * lvlm;
                             }
                             break;
-                    }
-                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}'s LVL {fish.Lvl} **{prefix} {species}**\nName: **{fish.Name}**\nStats: **ATK : {att} DEF : {def} HP : {hp} AP : {ap}**\nActions:\n{attacks}");
-
+                        }
+                        message.AppendLine($"LVL {fish.Lvl} **{prefix} {species}**\nName: **{fish.Name}**\nStats: **ATK : {att} DEF : {def}% HP : {hp} AP : {ap}**\nActions:\n{attacks}\n\n");
+                    
+                    await Context.Channel.SendMessageAsync(message.ToString());
                 }
-                else if (option == "name" && sec != null|| option == "n" && sec != null)
+                else if (option == "name" && sec != null || option == "n" && sec != null)
                 {
+                    var fish = userfish.FirstOrDefault(x => x.FishType == user.CurrentBattlefish);
+                    if (fish == null)
+                    {
+                        fish = userfish.FirstOrDefault();
+                    }
+
+                    if (fish == null)
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou can't name a fish you don't own!");
+                        return;
+                    }
+
                     if (sec.Length > 16)
                     {
                         await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nThe maximum name length is 16 characters. \nStop jassing.");
@@ -250,8 +384,13 @@ namespace Kehyeedra3.Commands
                         $"\n3 : **Abama** - A cephalopod rogue with a heavy focus on debuffs. It is very agile.\nModifiers: **ATK 4, DEF 3, HP 5, AP 18**" +
                         $"\n4 : **Pistashrimp** - A crustacean ranger with a heavy focus on DPS. It is somewhat agile.\nModifiers: **ATK 15, DEF 4, HP 5, AP 6**");
                     var reply = await NextMessageAsync();
-                    byte rep = byte.Parse(reply.Content);
-                    if (rep > 4 || rep < 1)
+                    BattleFish rep = (BattleFish)byte.Parse(reply.Content);
+                    if (userfish.Any(x => x.FishType == rep))
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou already have one of those, please don't neglect it and make it sad.");
+                        return;
+                    }
+                    if ((int)rep > 4 || (int)rep < 1)
                     {
                         await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nWhat you're looking for does not exist.");
                         return;
@@ -261,7 +400,8 @@ namespace Kehyeedra3.Commands
                         await Context.Channel.SendMessageAsync($"Sorry **{Context.User.Mention}**, I can't give credit.\nCome back when you're a little, ***mmmmm***, richer.\n*You're missing {(500 - user.Money)/10000d}%.*");
                         return;
                     }
-                    switch (rep)
+                    string species = "";
+                    switch ((int)rep)
                     {
                         case 1:
                             {
@@ -293,8 +433,15 @@ namespace Kehyeedra3.Commands
                             await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBank has no money, convince someone to gamble.");
                             return;
                         }
-                        //create fish here pls let there fish be
-                        fish.FishType = rep;
+
+                        var bfish = new User.BattleFishObject
+                        {
+                            FishType = rep,
+                            UserId = Context.User.Id
+                        };
+
+                        Database.Battlefish.Add(bfish);
+
                         await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nThank you for your purchase.");
                         await Database.SaveChangesAsync();
                     }
@@ -341,7 +488,19 @@ namespace Kehyeedra3.Commands
                 }
                 else if (option == "change" || option == "c")
                 {
-                    
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nPlease select your battlefish\n{bfishlist}");
+                    var fens = await NextMessageAsync();
+                    type = (BattleFish)byte.Parse(fens.Content);
+                    if (userfish.Any(x => x.FishType == type))
+                    {
+                        user.CurrentBattlefish = type;
+                        await Database.SaveChangesAsync();
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nBattlefish changed.");
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"{Context.User.Mention}\nYou don't own that.");
+                    }
                 }
                 else
                 {
@@ -703,76 +862,6 @@ namespace Kehyeedra3.Commands
 
 
 
-        [RequireRolePrecondition(AccessLevel.BotOwner)]
-        [Command("setbf")]
-        public async Task SetBattleFish(byte type, IUser usar = null)
-        {
-            string species = "";
-            switch (type)
-            {
-                case 0:
-                    {
-                        species = "None";
-                    }
-                    break;
-                case 1:
-                    {
-                        species = "Herring";
-                    }
-                    break;
-                case 2:
-                    {
-                        species = "Birgus";
-                    }
-                    break;
-                case 3:
-                    {
-                        species = "Abama";
-                    }
-                    break;
-                case 4:
-                    {
-                        species = "Pistashrimp";
-                    }
-                    break;
-            }
-            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
-            {
-                if (usar == null)
-                {
-                    var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id).BattleFish.FirstOrDefault();
-                    user.FishType = type;
-                    await Context.Channel.SendMessageAsync($"Changed **{Context.User.Username}**'s bf type to {species}.");
-                }
-                else
-                {
-                    var user = Database.Users.FirstOrDefault(x => x.Id == usar.Id).BattleFish.FirstOrDefault();
-                    user.FishType = type;
-                    await Context.Channel.SendMessageAsync($"Changed **{usar.Username}**'s bf type to {species}.");
-                }
-                await Database.SaveChangesAsync();
-            }
-        }
-        [RequireRolePrecondition(AccessLevel.BotOwner)]
-        [Command("setbflv")]
-        public async Task SetBattleFishLevel(int lv, IUser usar = null)
-        {
-            using (var Database = new ApplicationDbContextFactory().CreateDbContext())
-            {
-                if (usar == null)
-                {
-                    var user = Database.Users.FirstOrDefault(x => x.Id == Context.User.Id).BattleFish.FirstOrDefault();
-                    user.Lvl = lv;
-                    await Context.Channel.SendMessageAsync($"Changed **{Context.User.Username}**'s bf lvl to {lv}.");
-                }
-                else
-                {
-                    var user = Database.Users.FirstOrDefault(x => x.Id == usar.Id).BattleFish.FirstOrDefault();
-                    user.Lvl = lv;
-                    await Context.Channel.SendMessageAsync($"Changed **{usar.Username}**'s bf lvl to {lv}.");
-                }
-                await Database.SaveChangesAsync();
-            }
-        }
+
     }
 }
